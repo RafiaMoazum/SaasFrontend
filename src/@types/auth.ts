@@ -1,24 +1,35 @@
 export type SignInCredential = {
-    userName: string
+    email: string
     password: string
+    deviceId: string
+    deviceName: string
 }
 
 export type SignInResponse = {
-    token: string
+    accessToken: string 
+    refreshToken: string 
     user: {
-        userName: string
-        authority: string[]
-        avatar: string
+        id: string
+        firstName: string
+        lastName: string
         email: string
+        role: string
+        permissions: string[]
+        authority: string[]
+        profileImage: string
     }
 }
+   
 
 export type SignUpResponse = SignInResponse
 
 export type SignUpCredential = {
-    userName: string
+    firstName: string
+    lastName: string
     email: string
     password: string
+    deviceId: string
+    deviceName: string
 }
 
 export type ForgotPassword = {
@@ -26,5 +37,7 @@ export type ForgotPassword = {
 }
 
 export type ResetPassword = {
-    password: string
+    email: string
+    token: string
+    newPassword: string
 }

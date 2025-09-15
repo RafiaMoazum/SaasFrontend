@@ -1,4 +1,8 @@
-import { apiSignIn, apiSignOut, apiSignUp } from '@/services/AuthService'
+import {
+    apiSignUp,
+    apiSignIn,
+    apiSignOut,
+} from '@/services/AuthService'
 import {
     setUser,
     signInSuccess,
@@ -11,17 +15,28 @@ import { REDIRECT_URL_KEY } from '@/constants/app.constant'
 import { useNavigate } from 'react-router-dom'
 import useQuery from './useQuery'
 import type { SignInCredential, SignUpCredential } from '@/@types/auth'
+import { UserState } from '@/store/slices/auth/userSlice'
+import { v4 as uuidv4 } from 'uuid'
 
 type Status = 'success' | 'failed'
 
 function useAuth() {
     const dispatch = useAppDispatch()
-
     const navigate = useNavigate()
-
     const query = useQuery()
 
-    const { token, signedIn } = useAppSelector((state) => state.auth.session)
+    const { accessToken, refreshToken, signedIn } = useAppSelector(
+        (state) => state.auth.session
+    )
+
+    const getDeviceId = () => {
+        let deviceId = localStorage.getItem('deviceId')
+        if (!deviceId) {
+            deviceId = uuidv4()
+            localStorage.setItem('deviceId', deviceId)
+        }
+        return deviceId
+    }
 
     const signIn = async (
         values: SignInCredential
@@ -32,25 +47,35 @@ function useAuth() {
           }
         | undefined
     > => {
-
-    
         try {
-            const resp = await apiSignIn(values)
+            const deviceId = getDeviceId()
+            const resp = await apiSignIn({ ...values, deviceId })
+
             if (resp.data) {
-                const { token } = resp.data
-                dispatch(signInSuccess(token))
-                if (resp.data.user) {
-                    dispatch(
-                        setUser(
-                            resp.data.user || {
-                                avatar: '',
-                                userName: 'Anonymous',
-                                authority: ['USER'],
-                                email: '',
-                            }
-                        )
-                    )
+                const { accessToken, refreshToken, user } = resp.data
+
+                dispatch(
+                    signInSuccess({
+                        accessToken,
+                        refreshToken,
+                    })
+                )
+
+                if (user) {
+                    const userData: UserState = {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        email: user.email,
+                        role: user.role,
+                        permissions: user.permissions,
+                        profileImage: user.profileImage || '',
+                        authority: [user.role || 'USER'],
+                    }
+
+                    dispatch(setUser(userData))
                 }
+
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
                 navigate(
                     redirectUrl ? redirectUrl : appConfig.authenticatedEntryPath
@@ -60,8 +85,8 @@ function useAuth() {
                     message: '',
                 }
             }
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         } catch (errors: any) {
+            console.error('SignIn error:', errors)
             return {
                 status: 'failed',
                 message: errors?.response?.data?.message || errors.toString(),
@@ -69,38 +94,33 @@ function useAuth() {
         }
     }
 
+    
+
     const signUp = async (values: SignUpCredential) => {
         try {
             const resp = await apiSignUp(values)
+
             if (resp.data) {
-                const { token } = resp.data
-                dispatch(signInSuccess(token))
-                if (resp.data.user) {
-                    dispatch(
-                        setUser(
-                            resp.data.user || {
-                                avatar: '',
-                                userName: 'Anonymous',
-                                authority: ['USER'],
-                                email: '',
-                            }
-                        )
-                    )
-                }
+                // Redirect after successful signup
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
                 navigate(
-                    redirectUrl ? redirectUrl : appConfig.authenticatedEntryPath
+                    redirectUrl
+                        ? redirectUrl
+                        : appConfig.unAuthenticatedEntryPath
                 )
+
                 return {
                     status: 'success',
                     message: '',
                 }
             }
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         } catch (errors: any) {
             return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                message:
+                    errors?.response?.data?.errors?.[0] ||
+                    errors?.response?.data?.message ||
+                    errors.toString(),
             }
         }
     }
@@ -109,22 +129,45 @@ function useAuth() {
         dispatch(signOutSuccess())
         dispatch(
             setUser({
-                avatar: '',
-                userName: '',
+                id: '',
+                firstName: '',
+                lastName: '',
                 email: '',
+                role: '',
+                permissions: [],
+                profileImage: '',
                 authority: [],
             })
         )
         navigate(appConfig.unAuthenticatedEntryPath)
     }
 
-    const signOut = async () => {
-        await apiSignOut()
-        handleSignOut()
+    const signOut = async (): Promise<{
+        status: Status
+        message: string
+    }> => {
+        try {
+            const deviceId = localStorage.getItem('deviceId') || ''
+
+            await apiSignOut({ deviceId })
+
+            handleSignOut()
+
+            return {
+                status: 'success',
+                message: 'Signed out successfully',
+            }
+        } catch (errors: any) {
+            console.error('SignOut error:', errors)
+            return {
+                status: 'failed',
+                message: errors?.response?.data?.message || errors.toString(),
+            }
+        }
     }
 
     return {
-        authenticated: token && signedIn,
+        authenticated: accessToken && refreshToken && signedIn,
         signIn,
         signUp,
         signOut,

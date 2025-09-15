@@ -8,32 +8,59 @@ import type {
     SignUpResponse,
 } from '@/@types/auth'
 
-export async function apiSignIn(data: SignInCredential) {
-    return ApiService.fetchData<SignInResponse>({
-        url: '/sign-in',
-        method: 'post',
-        data,
-    })
-}
-
 export async function apiSignUp(data: SignUpCredential) {
-    return ApiService.fetchData<SignUpResponse>({
-        url: '/sign-up',
+    return ApiService.fetchData({
+     url: '/auth/signup', 
+     method: 'post',
+      data 
+    })
+}
+export async function apiSignIn(data: SignInCredential) {
+    return ApiService.fetchData<SignInResponse>({ 
+        url: '/auth/login', 
+        method: 'post', 
+        data 
+    })
+}
+export async function apiSignOut(data: { deviceId: string }) {
+    return ApiService.fetchData({
+        url: '/auth/logout-device',
+        method: 'post',
+        data,
+    })
+}
+export async function apiRefresh(data: {
+    deviceId: string
+    refreshToken: string
+}) {
+    return ApiService.fetchData({
+        url: '/auth/refresh-token',
         method: 'post',
         data,
     })
 }
 
-export async function apiSignOut() {
+
+export async function apiVerifyEmail(params: { token: string; email: string }) {
     return ApiService.fetchData({
-        url: '/sign-out',
-        method: 'post',
+        url: '/auth/verification/verify-email',
+        method: 'get',
+        params, 
     })
 }
+
+export async function apiResendVerification(data: { email: string }) {
+    return ApiService.fetchData({
+        url: '/auth/verification/resend-verification',
+        method: 'post',
+        data,
+    })
+}
+
 
 export async function apiForgotPassword(data: ForgotPassword) {
     return ApiService.fetchData({
-        url: '/forgot-password',
+        url: '/auth/password/request-set-password',
         method: 'post',
         data,
     })
@@ -41,7 +68,7 @@ export async function apiForgotPassword(data: ForgotPassword) {
 
 export async function apiResetPassword(data: ResetPassword) {
     return ApiService.fetchData({
-        url: '/reset-password',
+        url: '/auth/password/set-password',
         method: 'post',
         data,
     })

@@ -2,14 +2,10 @@
     "nav": {
         "home": "Home",
         "singleMenuItem": "Single menu item",
-        "role-management": "Role",
-        "permissiosn-management": "Permission",
-        "promo-codes": "Promo Codes",
-        "PackageManagement": {
-            "PackageManagement": "Package Management",
-            "item1": "Package List",
-            "item2": "Package Features",
-            "item3": "Package Badges"
+        "collapseMenu": {
+            "collapseMenu": "Collapse menu item",
+            "item1": "Collapse menu item 1",
+            "item2": "Collapse menu item 2"
         },
         "groupMenu": {
             "groupMenu": "Group menu",
