@@ -1,12 +1,9 @@
-import { createServer, Registry, Server } from 'miragejs'
+import { createServer } from 'miragejs'
 import appConfig from '@/configs/app.config'
 
 import { signInUserData } from './data/authData'
 
 import { authFakeApi } from './fakeApi'
-
-import { AnyModels, AnyFactories } from 'miragejs/-types'
-
 
 const { apiPrefix } = appConfig
 
@@ -21,8 +18,6 @@ export function mockServer({ environment = 'test' }) {
         routes() {
             this.urlPrefix = ''
             this.namespace = ''
-                        this.passthrough('/api/**')
-
             this.passthrough((request) => {
                 const isExternal = request.url.startsWith('http')
                 return isExternal
@@ -30,9 +25,6 @@ export function mockServer({ environment = 'test' }) {
             this.passthrough()
 
             authFakeApi(this, apiPrefix)
-
         },
     })
 }
-
-

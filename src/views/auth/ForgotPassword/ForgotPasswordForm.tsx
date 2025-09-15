@@ -21,7 +21,19 @@ type ForgotPasswordFormSchema = {
 }
 
 const validationSchema = Yup.object().shape({
-    email: Yup.string().required('Please enter your email'),
+   email: Yup.string()
+          .email('Email must be a valid email')
+          .required('Email is required')
+          .test(
+              'domain-has-dot',
+              'Email must include user@domain.com',
+              function (value) {
+                  if (!value) return true
+                  const parts = value.split('@')
+                  if (parts.length !== 2) return false
+                  return parts[1].includes('.')
+              }
+          ),
 })
 
 const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
@@ -79,7 +91,7 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
             )}
             <Formik
                 initialValues={{
-                    email: 'admin@mail.com',
+                    email: '',
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {

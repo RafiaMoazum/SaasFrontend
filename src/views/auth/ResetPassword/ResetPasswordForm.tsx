@@ -11,6 +11,7 @@ import { Field, Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import type { CommonProps } from '@/@types/common'
 import type { AxiosError } from 'axios'
+import { useSearchParams } from 'react-router-dom'
 
 interface ResetPasswordFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -22,33 +23,43 @@ type ResetPasswordFormSchema = {
     confirmPassword: string
 }
 
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
+
 const validationSchema = Yup.object().shape({
-    password: Yup.string().required('Please enter your password'),
-    confirmPassword: Yup.string().oneOf(
-        [Yup.ref('password')],
-        'Your passwords do not match'
-    ),
+    password: Yup.string()
+        .min(8, 'Min 8 characters')
+        .matches(passwordPattern, 'Include letters, numbers & symbols')
+        .required('Password is required'),
+
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password')], 'Passwords must match')
+        .required('Confirm Password is required'),
 })
 
 const ResetPasswordForm = (props: ResetPasswordFormProps) => {
     const { disableSubmit = false, className, signInUrl = '/sign-in' } = props
 
     const [resetComplete, setResetComplete] = useState(false)
-
     const [message, setMessage] = useTimeOutMessage()
-
     const navigate = useNavigate()
+
+    const [searchParams] = useSearchParams()
+    const email = searchParams.get('email') || ''
+    const token = searchParams.get('token') || ''
 
     const onSubmit = async (
         values: ResetPasswordFormSchema,
         setSubmitting: (isSubmitting: boolean) => void
     ) => {
-        const { password } = values
         setSubmitting(true)
         try {
-            const resp = await apiResetPassword({ password })
+            const resp = await apiResetPassword({
+                email,
+                token,
+                newPassword: values.password,
+            })
+
             if (resp.data) {
-                setSubmitting(false)
                 setResetComplete(true)
             }
         } catch (errors) {
@@ -56,6 +67,7 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
                 (errors as AxiosError<{ message: string }>)?.response?.data
                     ?.message || (errors as Error).toString()
             )
+        } finally {
             setSubmitting(false)
         }
     }
@@ -88,8 +100,8 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
             )}
             <Formik
                 initialValues={{
-                    password: '123Qwe1',
-                    confirmPassword: '123Qwe1',
+                    password: '',
+                    confirmPassword: '',
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {

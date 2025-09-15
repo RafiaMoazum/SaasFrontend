@@ -15,14 +15,21 @@ const authRoute: Routes = [
         authority: [],
     },
     {
+        key: 'emailVerification',
+        path: `/verify-email`,
+        component: lazy(() => import('@/views/auth/EmailVerification')),
+        authority: [],
+    },
+
+    {
         key: 'forgotPassword',
-        path: `/forgot-password`,
+        path: `/request-set-password`,
         component: lazy(() => import('@/views/auth/ForgotPassword')),
         authority: [],
     },
     {
         key: 'resetPassword',
-        path: `/reset-password`,
+        path: `/set-password`,
         component: lazy(() => import('@/views/auth/ResetPassword')),
         authority: [],
     },
