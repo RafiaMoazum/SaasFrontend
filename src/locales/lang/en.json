@@ -1,0 +1,24 @@
+{
+    "nav": {
+        "home": "Home",
+        "singleMenuItem": "Single menu item",
+        "role-management": "Role",
+        "permissiosn-management": "Permission",
+        "promo-codes": "Promo Codes",
+        "PackageManagement": {
+            "PackageManagement": "Package Management",
+            "item1": "Package List",
+            "item2": "Package Features",
+            "item3": "Package Badges"
+        },
+        "groupMenu": {
+            "groupMenu": "Group menu",
+            "single": "Group single menu item",
+            "collapse": {
+                "collapse": "Group collapse menu",
+                "item1": "Group collapse menu item 1",
+                "item2": "Group collapse menu item 2"
+            }
+        }
+    }
+}
