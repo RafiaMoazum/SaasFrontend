@@ -29,6 +29,12 @@ export default defineConfig({
         secure: false,
         timeout: 180000,
       },
+       "/uploads": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+        timeout: 180000,
+      },
     },
   },
 });

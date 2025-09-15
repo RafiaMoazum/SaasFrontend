@@ -7,19 +7,20 @@ import type {
     SignInResponse,
     SignUpResponse,
 } from '@/@types/auth'
+import BaseService from './BaseService'
 
 export async function apiSignUp(data: SignUpCredential) {
     return ApiService.fetchData({
-     url: '/auth/signup', 
-     method: 'post',
-      data 
+        url: '/auth/signup',
+        method: 'post',
+        data,
     })
 }
 export async function apiSignIn(data: SignInCredential) {
-    return ApiService.fetchData<SignInResponse>({ 
-        url: '/auth/login', 
-        method: 'post', 
-        data 
+    return ApiService.fetchData<SignInResponse>({
+        url: '/auth/login',
+        method: 'post',
+        data,
     })
 }
 export async function apiSignOut(data: { deviceId: string }) {
@@ -33,19 +34,18 @@ export async function apiRefresh(data: {
     deviceId: string
     refreshToken: string
 }) {
-    return ApiService.fetchData({
+    return BaseService({
         url: '/auth/refresh-token',
         method: 'post',
         data,
     })
 }
 
-
 export async function apiVerifyEmail(params: { token: string; email: string }) {
     return ApiService.fetchData({
         url: '/auth/verification/verify-email',
         method: 'get',
-        params, 
+        params,
     })
 }
 
@@ -56,7 +56,6 @@ export async function apiResendVerification(data: { email: string }) {
         data,
     })
 }
-
 
 export async function apiForgotPassword(data: ForgotPassword) {
     return ApiService.fetchData({

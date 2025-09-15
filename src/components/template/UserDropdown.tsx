@@ -16,21 +16,33 @@ type DropdownList = {
 
 const dropdownItemList: DropdownList[] = []
 
-const _UserDropdown = ({ className }: CommonProps) => {
+const getFullImageUrl = (filename: string | null) => {
+    if (!filename) return null
+    return `/uploads/${filename}`
+}
 
+const _UserDropdown = ({ className }: CommonProps) => {
     const { signOut } = useAuth()
 
     const role = useAppSelector((state) => state.auth.user.role)
     const firstName = useAppSelector((state) => state.auth.user.firstName)
     const lastName = useAppSelector((state) => state.auth.user.lastName)
     const email = useAppSelector((state) => state.auth.user.email)
+    const profileImage = useAppSelector((state) => state.auth.user.profileImage)
+
+    const avatarSrc = profileImage ? getFullImageUrl(profileImage) : null
 
     const UserAvatar = (
         <div className={classNames(className, 'flex items-center gap-2')}>
-            <Avatar size={32} shape="circle" icon={<HiOutlineUser />} />
+            <Avatar
+                size={32}
+                shape="circle"
+                src={avatarSrc || undefined}
+                icon={!avatarSrc ? <HiOutlineUser /> : undefined}
+            />
             <div className="hidden md:block">
                 <div className="text-xs capitalize">{role}</div>
-                <div className="font-bold">{firstName + " " + lastName}</div>
+                <div className="font-bold">{firstName + ' ' + lastName}</div>
             </div>
         </div>
     )
@@ -44,10 +56,15 @@ const _UserDropdown = ({ className }: CommonProps) => {
             >
                 <Dropdown.Item variant="header">
                     <div className="py-2 px-3 flex items-center gap-2">
-                        <Avatar shape="circle" icon={<HiOutlineUser />} />
+                        <Avatar
+                            shape="circle"
+                            size={40}
+                            src={avatarSrc || undefined}
+                            icon={!avatarSrc ? <HiOutlineUser /> : undefined}
+                        />
                         <div>
                             <div className="font-bold text-gray-900 dark:text-gray-100">
-                                {firstName + " " + lastName}
+                                {firstName + ' ' + lastName}
                             </div>
                             <div className="text-xs">{email}</div>
                         </div>
@@ -60,8 +77,8 @@ const _UserDropdown = ({ className }: CommonProps) => {
                         eventKey={item.label}
                         className="mb-1 px-0"
                     >
-                        <Link 
-                            className="flex h-full w-full px-2" 
+                        <Link
+                            className="flex h-full w-full px-2"
                             to={item.path}
                         >
                             <span className="flex gap-2 items-center w-full">
@@ -73,7 +90,7 @@ const _UserDropdown = ({ className }: CommonProps) => {
                         </Link>
                     </Dropdown.Item>
                 ))}
-                {/* <Dropdown.Item variant="divider" /> */}
+
                 <Dropdown.Item
                     eventKey="Sign Out"
                     className="gap-2"
