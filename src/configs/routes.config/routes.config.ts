@@ -11,47 +11,131 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/Home')),
         authority: [],
     },
-    /** Example purpose only, please remove */
-    {
-        key: 'singleMenuItem',
-        path: '/single-menu-view',
-        component: lazy(() => import('@/views/demo/SingleMenuView')),
+     {
+        key: 'user-management',
+        path: '/userManagement',
+        component: lazy(() => import('@/views/UserManagement/UserManagement')),
         authority: [],
     },
     {
-        key: 'collapseMenu.item1',
-        path: '/collapse-menu-item-view-1',
-        component: lazy(() => import('@/views/demo/CollapseMenuItemView1')),
+        key: 'role-management',
+        path: '/roleManagement',
+        component: lazy(() => import('@/views/RoleManagement/RoleManagement')),
+        authority: [],
+    },
+     {
+        key: 'add-role',
+        path: '/addRole',
+        component: lazy(() => import('@/views/RoleManagement/AddRole')),
+        authority: [],
+    },
+     {
+        key: 'edit-role',
+        path: '/editRole/:roleId',
+        component: lazy(() => import('@/views/RoleManagement/AddRole')),
+        authority: [],
+    },
+      {
+        key: 'permissions-management',
+        path: '/permissionsList',
+        component: lazy(() => import('@/views/Permissions/PermissionsList')),
+        authority: [],
+    },
+     {
+        key: 'add-permission',
+        path: '/addPermission',
+        component: lazy(() => import('@/views/Permissions/AddPermissions')),
         authority: [],
     },
     {
-        key: 'collapseMenu.item2',
-        path: '/collapse-menu-item-view-2',
-        component: lazy(() => import('@/views/demo/CollapseMenuItemView2')),
+        key: 'edit-permission',
+        path: '/editPermission/:id',
+        component: lazy(() => import('@/views/Permissions/AddPermissions')),
         authority: [],
     },
     {
-        key: 'groupMenu.single',
-        path: '/group-single-menu-item-view',
-        component: lazy(() =>
-            import('@/views/demo/GroupSingleMenuItemView')
-        ),
+        key: 'promo-codes',
+        path: '/promoCodesList',
+        component: lazy(() => import('@/views/PromoCodes/PromoCodesList')),
+        authority: [],
+    },
+     {
+        key: 'add-promoCode',
+        path: '/addPromoCode',
+        component: lazy(() => import('@/views/PromoCodes/AddEditPromoCodes')),
         authority: [],
     },
     {
-        key: 'groupMenu.collapse.item1',
-        path: '/group-collapse-menu-item-view-1',
-        component: lazy(() =>
-            import('@/views/demo/GroupCollapseMenuItemView1')
-        ),
+        key: 'edit-promoCode',
+        path: '/editPromoCode/:id',
+        component: lazy(() => import('@/views/PromoCodes/AddEditPromoCodes')),
         authority: [],
     },
     {
-        key: 'groupMenu.collapse.item2',
-        path: '/group-collapse-menu-item-view-2',
-        component: lazy(() =>
-            import('@/views/demo/GroupCollapseMenuItemView2')
-        ),
+        key: 'PackageManagement.item1',
+        path: '/packageList',
+        component: lazy(() => import('@/views/PackageManagement/PackageList')),
         authority: [],
     },
+
+     {
+        key: 'PackageManagement.item1.1',
+        path: '/addPackage',
+        component: lazy(() => import('@/views/PackageManagement/AddEditPackage')),
+        authority: [],
+    },
+
+     {
+        key: 'PackageManagement.item1.2',
+        path: '/editPackage/:packageId',
+        component: lazy(() => import('@/views/PackageManagement/AddEditPackage')),
+        authority: [],
+    },
+
+     //**************************Package Features************************************* */
+     {
+        key: 'PackageManagement.item2',
+        path: '/packageFeaturesList',
+        component: lazy(() => import('@/views/PackageFeatures/PackageFeaturesList')),
+        authority: [],
+    },
+
+     {
+        key: 'PackageManagement.item2.1',
+        path: '/addPackageFeature',
+        component: lazy(() => import('@/views/PackageFeatures/AddEditPackageFeaturesList')),
+        authority: [],
+    },
+
+     {
+        key: 'PackageManagement.item2.2',
+        path: '/editPackageFeature/:id',
+        component: lazy(() => import('@/views/PackageFeatures/AddEditPackageFeaturesList')),
+        authority: [],
+    },
+
+
+     //**************************Package Badge************************************* */
+     {
+        key: 'PackageManagement.item3',
+        path: '/packageBadgesList',
+        component: lazy(() => import('@/views/PackageBadges/PackageBadgesList')),
+        authority: [],
+    },
+
+     {
+        key: 'PackageManagement.item3.1',
+        path: '/addPackageBadge',
+        component: lazy(() => import('@/views/PackageBadges/AddEditPackageBadge')),
+        authority: [],
+    },
+
+     {
+        key: 'PackageManagement.item3.2',
+        path: '/editPackageBadge/:id',
+        component: lazy(() => import('@/views/PackageBadges/AddEditPackageBadge')),
+        authority: [],
+    },
+
+
 ]
