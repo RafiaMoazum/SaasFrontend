@@ -31,13 +31,13 @@ const _SidePanel = (props: SidePanelProps) => {
 
     return (
         <>
-            <div
+            {/* <div
                 className={classNames('text-2xl', className)}
                 onClick={openPanel}
                 {...rest}
             >
                 <HiOutlineCog />
-            </div>
+            </div> */}
             <Drawer
                 title="Side Panel"
                 isOpen={panelExpand}
@@ -46,7 +46,7 @@ const _SidePanel = (props: SidePanelProps) => {
                 onClose={closePanel}
                 onRequestClose={closePanel}
             >
-                <SidePanelContent callBackClose={closePanel} />
+                {/* <SidePanelContent callBackClose={closePanel} /> */}
             </Drawer>
         </>
     )

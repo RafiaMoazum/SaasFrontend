@@ -18,19 +18,19 @@ const Logo = (props: LogoProps) => {
         className,
         imgClass,
         style,
-        logoWidth = 'auto',
+        logoWidth = '100%', 
     } = props
 
     return (
         <div
-            className={classNames('logo', className)}
+            className={classNames('logo mt-[20px] mb-[4px]', className)}
             style={{
                 ...style,
-                ...{ width: logoWidth },
+                width: logoWidth, 
             }}
         >
             <img
-                className={imgClass}
+                className={classNames('w-full', imgClass)}
                 src={`${LOGO_SRC_PATH}logo-${mode}-${type}.png`}
                 alt={`${APP_NAME} logo`}
             />

@@ -12,33 +12,34 @@ const Side = ({ children, content, ...rest }: SideProps) => {
     return (
         <div className="grid lg:grid-cols-3 h-full">
             <div
-                className="bg-no-repeat bg-cover py-6 px-16 flex-col justify-between hidden lg:flex"
+                className="bg-no-repeat bg-cover py-2 px-16 flex-col justify-between hidden lg:flex"
                 style={{
-                    backgroundImage: `url('/img/others/auth-side-bg.jpg')`,
+                    background: `radial-gradient(circle at center, #ECFDF5, #A7F3D0)`,
                 }}
             >
-                <Logo mode="dark" />
+                <Logo mode="light" />
                 <div>
                     <div className="mb-6 flex items-center gap-4">
                         <Avatar
                             className="border-2 border-white"
                             shape="circle"
-                            src="/img/avatars/thumb-10.jpg"
+                            src="/img/avatars/thumb-13.jpg"
                         />
-                        <div className="text-white">
+                        <div className="text-[#2C2C2C]">
                             <div className="font-semibold text-base">
-                                Brittany Hale
+                                Farzok Malik
                             </div>
-                            <span className="opacity-80">CTO, Onward</span>
+                            <span className="opacity-80">Founder</span>
                         </div>
                     </div>
-                    <p className="text-lg text-white opacity-80">
-                        Elstar comes with a complete set of UI components
-                        crafted with Tailwind CSS, it fulfilled most of the use
-                        case to create modern and beautiful UI and application
+                    <p className="text-lg text-[#2C2C2C] opacity-80">
+                        Whether you’re looking to streamline operations, enhance
+                        customer experiences, or unlock new revenue streams, our
+                        comprehensive suite of services is designed to meet your
+                        needs. Let’s build the future together.
                     </p>
                 </div>
-                <span className="text-white">
+                <span className="text-[#2C2C2C]">
                     Copyright &copy; {`${new Date().getFullYear()}`}{' '}
                     <span className="font-semibold">{`${APP_NAME}`}</span>{' '}
                 </span>

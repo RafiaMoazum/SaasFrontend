@@ -226,7 +226,12 @@ const AddEditUser: React.FC = () => {
         formData.append('roleId', values.roleId)
 
         if (values.profileImage) {
+            // user uploaded a new file
             formData.append('profileImage', values.profileImage)
+        } else if (isEditMode && avatarImg) {
+            // user did NOT upload new file, keep existing filename
+            const existingFileName = avatarImg.replace('/uploads/', '')
+            formData.append('profileImage', existingFileName)
         }
 
         try {

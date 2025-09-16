@@ -1,8 +1,4 @@
-import {
-    apiSignUp,
-    apiSignIn,
-    apiSignOut,
-} from '@/services/AuthService'
+import { apiSignUp, apiSignIn, apiSignOut } from '@/services/AuthService'
 import {
     setUser,
     signInSuccess,
@@ -17,6 +13,7 @@ import useQuery from './useQuery'
 import type { SignInCredential, SignUpCredential } from '@/@types/auth'
 import { UserState } from '@/store/slices/auth/userSlice'
 import { v4 as uuidv4 } from 'uuid'
+import { useTokenRefresher } from './useTokenRefresher'
 
 type Status = 'success' | 'failed'
 
@@ -28,6 +25,8 @@ function useAuth() {
     const { accessToken, refreshToken, signedIn } = useAppSelector(
         (state) => state.auth.session
     )
+
+    useTokenRefresher()
 
     const getDeviceId = () => {
         let deviceId = localStorage.getItem('deviceId')
@@ -93,8 +92,6 @@ function useAuth() {
             }
         }
     }
-
-    
 
     const signUp = async (values: SignUpCredential) => {
         try {

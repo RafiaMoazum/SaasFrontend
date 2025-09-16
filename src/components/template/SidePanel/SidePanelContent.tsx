@@ -4,7 +4,7 @@ import type { ThemeConfiguratorProps } from '@/components/template/ThemeConfigur
 export type SidePanelContentProps = ThemeConfiguratorProps
 
 const SidePanelContent = (props: SidePanelContentProps) => {
-    return <ThemeConfigurator {...props} />
+    // return <ThemeConfigurator {...props} />
 }
 
 export default SidePanelContent
