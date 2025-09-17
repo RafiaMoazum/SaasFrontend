@@ -18,19 +18,21 @@ const Logo = (props: LogoProps) => {
         className,
         imgClass,
         style,
-        logoWidth = '100%', 
     } = props
+
+    // ✅ Dynamic width based on type
+    const computedWidth = type === 'full' ? '80%' : '100%'
 
     return (
         <div
-            className={classNames('logo mt-[20px] mb-[4px]', className)}
+            className={classNames('logo mt-[20px] mb-[4px]', className)} 
             style={{
                 ...style,
-                width: logoWidth, 
+                width: computedWidth,
             }}
         >
             <img
-                className={classNames('w-full', imgClass)}
+                className={classNames('w-full', imgClass)} 
                 src={`${LOGO_SRC_PATH}logo-${mode}-${type}.png`}
                 alt={`${APP_NAME} logo`}
             />

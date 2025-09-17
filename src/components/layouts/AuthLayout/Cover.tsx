@@ -11,28 +11,32 @@ interface CoverProps extends CommonProps {
 const Cover = ({ children, content, ...rest }: CoverProps) => {
     return (
         <div className="grid lg:grid-cols-3 h-full">
+            {/* Left Section */}
             <div
-                className="col-span-2 bg-no-repeat bg-cover py-6 px-16 flex-col justify-between bg-white dark:bg-gray-800 hidden lg:flex"
+                className="col-span-2 py-6 px-16 flex-col justify-between bg-white dark:bg-gray-800 hidden lg:flex"
                 style={{
-                    backgroundImage: `url('/img/others/auth-cover-bg.jpg')`,
+                    background: `radial-gradient(circle at center, #ECFDF5, #A7F3D0)`,
                 }}
             >
-                <Logo mode="dark" />
+                <Logo mode="light" />
                 <div>
-                    <h3 className="text-white mb-4">
-                        Jump start your project with Elstar
+                    <h3 className="text-[#2C2C2C] mb-4 font-semibold text-2xl">
+                        {APP_NAME}
                     </h3>
-                    <p className="text-lg text-white opacity-80 max-w-[700px]">
-                        Elstar comes with a complete set of UI components
-                        crafted with Tailwind CSS, it fulfilled most of the use
-                        case to create modern and beautiful UI and application
+                    <p className="text-lg text-[#2C2C2C] opacity-80 max-w-[700px]">
+                        Whether you’re looking to streamline operations, enhance
+                        customer experiences, or unlock new revenue streams, our
+                        comprehensive suite of services is designed to meet your
+                        needs. Let’s build the future together.
                     </p>
                 </div>
-                <span className="text-white">
-                    Copyright &copy; {`${new Date().getFullYear()}`}{' '}
-                    <span className="font-semibold">{`${APP_NAME}`}</span>{' '}
+                <span className="text-[#2C2C2C]">
+                    Copyright &copy; {new Date().getFullYear()}{' '}
+                    <span className="font-semibold">{APP_NAME}</span>
                 </span>
             </div>
+
+            {/* Right Section */}
             <div className="flex flex-col justify-center items-center bg-white dark:bg-gray-800">
                 <div className="xl:min-w-[450px] px-8">
                     <div className="mb-8">{content}</div>

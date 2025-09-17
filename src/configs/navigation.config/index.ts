@@ -57,7 +57,7 @@ const navigationConfig: NavigationTree[] = [
     {
         key: 'PackageManagement',
         path: '',
-        title: 'Package Management',
+        title: 'Packages',
         icon: 'Package',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],

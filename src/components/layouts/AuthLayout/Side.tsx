@@ -14,7 +14,7 @@ const Side = ({ children, content, ...rest }: SideProps) => {
             <div
                 className="bg-no-repeat bg-cover py-2 px-16 flex-col justify-between hidden lg:flex"
                 style={{
-                    background: `radial-gradient(circle at center, #ECFDF5, #A7F3D0)`,
+                    background: `#1F1F1F`,
                 }}
             >
                 <Logo mode="light" />
@@ -25,21 +25,19 @@ const Side = ({ children, content, ...rest }: SideProps) => {
                             shape="circle"
                             src="/img/avatars/thumb-13.jpg"
                         />
-                        <div className="text-[#2C2C2C]">
+                        <div className="text-white">
                             <div className="font-semibold text-base">
                                 Farzok Malik
                             </div>
                             <span className="opacity-80">Founder</span>
                         </div>
                     </div>
-                    <p className="text-lg text-[#2C2C2C] opacity-80">
-                        Whether you’re looking to streamline operations, enhance
-                        customer experiences, or unlock new revenue streams, our
-                        comprehensive suite of services is designed to meet your
-                        needs. Let’s build the future together.
+                    <p className="text-lg text-white opacity-80">
+                        From efficiency to experience to growth our services
+                        empower your vision. Let’s shape the future together.
                     </p>
                 </div>
-                <span className="text-[#2C2C2C]">
+                <span className="text-white">
                     Copyright &copy; {`${new Date().getFullYear()}`}{' '}
                     <span className="font-semibold">{`${APP_NAME}`}</span>{' '}
                 </span>
