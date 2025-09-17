@@ -38,7 +38,7 @@ const _SidePanel = (props: SidePanelProps) => {
             >
                 <HiOutlineCog />
             </div> */}
-            <Drawer
+            {/* <Drawer
                 title="Side Panel"
                 isOpen={panelExpand}
                 placement={direction === 'rtl' ? 'left' : 'right'}
@@ -46,8 +46,8 @@ const _SidePanel = (props: SidePanelProps) => {
                 onClose={closePanel}
                 onRequestClose={closePanel}
             >
-                {/* <SidePanelContent callBackClose={closePanel} /> */}
-            </Drawer>
+                <SidePanelContent callBackClose={closePanel} />
+            </Drawer> */}
         </>
     )
 }

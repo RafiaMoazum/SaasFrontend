@@ -18,6 +18,8 @@ const AddEditPackageBadge: React.FC = () => {
     const [badgeText, setBadgeText] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    
+
 
     const { id } = useParams<{ id: string }>()
     const isEditMode = Boolean(id)

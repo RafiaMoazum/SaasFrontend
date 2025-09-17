@@ -1,84 +1,127 @@
 import React, { useState, useEffect } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { AdaptableCard } from '@/components/shared';
-import toast from '@/components/ui/toast';
-import Notification from '@/components/ui/Notification';
+import toast from '@/components/ui/toast'
+import Notification from '@/components/ui/Notification'
 import { AxiosError } from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate,useParams} from 'react-router-dom';
 import { apiGetAllPermissions } from '@/services/PermissionsApiService';
-import { apiCreateRole, apiGetRolesById, apiUpdateRole } from '@/services/RoleApiService'; // <-- update API added
+import { apiCreateRole, apiGetRolesById, apiUpdateRole } from '@/services/RoleApiService';
 
+
+
+
+// Define the structure for each permission
 interface Permission {
-    id: string;
-    permissionName: string;
-    description: string;
+    name: string;
+    view: boolean;
+    edit: boolean;
+    create: boolean;
+    delete: boolean;
+    viewId: string | null;
+    editId: string | null;
+    createId: string | null;
+    deleteId: string | null;
 }
-interface RoleData {
-    roleName: string;
-    roleDescription: string;
-    permissions?: Permission[];
-}
+
 
 const AddRole: React.FC = () => {
     const [permissions, setPermissions] = useState<Permission[]>([]);
-    const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-    const [roleName, setRoleName] = useState<string>('');
-    const [roleDescription, setRoleDescription] = useState<string>('');
+    const [roleName, setRoleName] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-
+    const [success, setSuccess] = useState<boolean>(false);
+    const [roleDescription, setRoleDescription] = useState<string>('');
     const { roleId } = useParams<{ roleId: string }>();
     const isEditMode = Boolean(roleId);  // check if edit mode
 
-    const navigate = useNavigate();
 
-    // 🔹 Fetch all permissions
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchPermissions = async () => {
             try {
                 const response = await apiGetAllPermissions();
-                setPermissions(response.data.data);
+                const rawPermissions = response.data.data;
+
+                const grouped: Record<string, Permission> = {};
+                rawPermissions.forEach((p: any) => {
+                    const [action, entity] = p.permissionName.split("_");
+
+                    if (!grouped[entity]) {
+                        grouped[entity] = {
+                            name: entity,
+                            view: false,
+                            edit: false,
+                            create: false,
+                            delete: false,
+                            viewId: null,
+                            editId: null,
+                            createId: null,
+                            deleteId: null,
+                        };
+                    }
+
+                    if (action === "view") grouped[entity].viewId = p.id;
+                    if (action === "edit" || action === "update") grouped[entity].editId = p.id;
+                    if (action === "create") grouped[entity].createId = p.id;
+                    if (action === "delete") grouped[entity].deleteId = p.id;
+                });
+
+                setPermissions(Object.values(grouped));
             } catch (error) {
-                console.error('Error fetching permissions:', error);
-            }
-        };
-        fetchPermissions();
-    }, []);
-
-    // 🔹 Fetch role data if in edit mode
-    useEffect(() => {
-        const fetchRoleForEdit = async () => {
-            if (!roleId) return;
-            setLoading(true);
-            try {
-                const response = await apiGetRolesById({ id: roleId });
-                console.log("roleForEdit=", response.data.data)
-                const role = response.data.data;
-
-                setRoleName(role.roleName);
-                setRoleDescription(role.roleDescription);
-                // pre-select permissions by mapping their ids
-                setSelectedPermissions(role.permissions.map((p: Permission) => p.id));
-            } catch (err) {
-                setError("Failed to fetch role data.");
-            } finally {
-                setLoading(false);
+                console.error("Error fetching permissions:", error);
             }
         };
 
-        if (isEditMode) {
-            fetchRoleForEdit();
-        }
-    }, [roleId, isEditMode]);
+        const fetchRoleDetails = async () => {
+            if (isEditMode && roleId) {
+                try {
+                    const response = await apiGetRolesById({ id:roleId });
+                    const roleData = response.data.data;
 
-    // 🔹 Toggle individual permission
-    const handleCheckboxChange = (id: string) => {
-        setSelectedPermissions((prev) =>
-            prev.includes(id) ? prev.filter((permId) => permId !== id) : [...prev, id]
-        );
+                    setRoleName(roleData.roleName);
+                    setRoleDescription(roleData.roleDescription);
+
+                    // Mark role's permissions as checked
+                    setPermissions((prev) =>
+                        prev.map((perm) => ({
+                            ...perm,
+                            view: roleData.permissions.some((p: any) => p.id === perm.viewId),
+                            edit: roleData.permissions.some((p: any) => p.id === perm.editId),
+                            create: roleData.permissions.some((p: any) => p.id === perm.createId),
+                            delete: roleData.permissions.some((p: any) => p.id === perm.deleteId),
+                        }))
+                    );
+                } catch (error) {
+                    console.error("Error fetching role details:", error);
+                }
+            }
+        };
+
+        fetchPermissions().then(fetchRoleDetails);
+    }, [isEditMode, roleId]);
+
+
+
+    // Handle checkbox change
+    const handleCheckboxChange = (index: number, field: keyof Permission) => {
+        const updatedPermissions = [...permissions];
+        updatedPermissions[index] = {
+            ...updatedPermissions[index],
+            [field]: !updatedPermissions[index][field], // Safely toggle the value
+        };
+        setPermissions(updatedPermissions);
     };
 
-    // 🔹 Submit handler
+
+    const handleSelectAll = (field: keyof Permission) => {
+        const allChecked = permissions.every((permission) => permission[field]);
+        const updatedPermissions = permissions.map((permission) => ({
+            ...permission,
+            [field]: !allChecked,
+        }));
+        setPermissions(updatedPermissions);
+    };
+
     const handleSubmit = async () => {
         if (!roleName.trim()) {
             toast.push(
@@ -90,44 +133,45 @@ const AddRole: React.FC = () => {
             return;
         }
 
+        const permissionIds: string[] = [];
+        permissions.forEach((p) => {
+            if (p.view && p.viewId) permissionIds.push(p.viewId);
+            if (p.edit && p.editId) permissionIds.push(p.editId);
+            if (p.create && p.createId) permissionIds.push(p.createId);
+            if (p.delete && p.deleteId) permissionIds.push(p.deleteId);
+        });
+
+        console.log("roleIds-->", roleId);
         const payload = {
-            id: roleId, 
+            roleId, // include when updating
             roleName,
             roleDescription,
-            permissionIds: selectedPermissions,
+            permissionIds,
         };
 
         try {
             setLoading(true);
-            if (isEditMode && roleId) {
-                // 🔹 Update role API
-               const response = await apiUpdateRole(payload);
-
-                console.log("response==", response);
-                toast.push(
-                    <Notification title="Successfully Updated" type="success" duration={2500}>
-                        Role Updated Successfully
-                    </Notification>,
-                    { placement: 'top-center' }
-                );
+            let response;
+            if (isEditMode) {
+                response = await apiUpdateRole(payload);
             } else {
-                // 🔹 Create role API
-                const response = await apiCreateRole(payload);
-                console.log("response==", response);
-                toast.push(
-                    <Notification title="Successfully Added" type="success" duration={2500}>
-                        Role Added Successfully
-                    </Notification>,
-                    { placement: 'top-center' }
-                );
+                response = await apiCreateRole(payload);
             }
 
-            navigate('/roleManagement');
+            if (response) {
+                toast.push(
+                    <Notification title="Success" type="success" duration={2500}>
+                        {isEditMode ? "Role Updated Successfully" : "Role Added Successfully"}
+                    </Notification>,
+                    { placement: 'top-center' }
+                );
+                navigate("/roleManagement");
+            }
         } catch (error) {
             if (error instanceof AxiosError) {
                 toast.push(
                     <Notification title="Error Occurred" type="danger" duration={2500}>
-                        {error.response?.data?.error || 'Failed to save role.'}
+                        {error.response?.data?.error || (isEditMode ? "Failed to update role." : "Failed to add role.")}
                     </Notification>,
                     { placement: 'top-center' }
                 );
@@ -144,13 +188,12 @@ const AddRole: React.FC = () => {
         }
     };
 
+
     return (
-        <AdaptableCard className="h-full" bodyClass="h-full">
+        <AdaptableCard className="h-full " bodyClass="h-full">
             <div className="bg-white rounded-lg">
                 <div className="pb-8">
-                    <h3 className="mb-4 lg:mb-0">
-                        {isEditMode ? "Edit Role" : "Add New Role"}
-                    </h3>
+                    <h3 className="mb-4 lg:mb-0">{isEditMode ? "Edit Role" : "Add New Role"}</h3>
                 </div>
                 <div className="pb-4">
                     <div className="mb-4">
@@ -163,7 +206,6 @@ const AddRole: React.FC = () => {
                             placeholder="Enter Role Name"
                         />
                     </div>
-
                     <div className="mb-4">
                         <label className="block text-sm font-medium">Role Description</label>
                         <textarea
@@ -175,30 +217,73 @@ const AddRole: React.FC = () => {
                         />
                     </div>
 
-                    <label className="block text-sm font-medium mb-2">Permissions</label>
-                    <div className="grid grid-cols-2 gap-4">
-                        {permissions.map((permission) => (
-                            <label
-                                key={permission.id}
-                                className="flex items-center space-x-2 border p-2 rounded-md"
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={selectedPermissions.includes(permission.id)}
-                                    onChange={() => handleCheckboxChange(permission.id)}
-                                />
-                                <span>{permission.permissionName}</span>
-                            </label>
-                        ))}
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse">
+                            <thead className='text-left'>
+                                <tr>
+                                    <th className="p-2">Permission</th>
+                                    <th className="p-2">View</th>
+                                    <th className="p-2">Edit</th>
+                                    <th className="p-2">Create</th>
+                                    <th className="p-2">Delete</th>
+                                </tr>
+                                <tr>
+                                    <th className="p-2"></th> {/* Empty space for the Permission column */}
+                                    {(["view", "edit", "create", "delete"] as (keyof Permission)[]).map((field) => (
+                                        <th key={field} className="py-2 px-5">
+
+                                            <input
+                                                type="checkbox"
+                                                onChange={(e) => handleSelectAll(field)}
+                                            />
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {permissions.map((permission, index) => (
+                                    <tr key={index}>
+                                        <td className="p-2">
+                                            {permission.name.charAt(0).toUpperCase() + permission.name.slice(1)}
+                                        </td>
+                                        {(["view", "edit", "create", "delete"] as (keyof Permission)[]).map((field) => (
+                                            <td key={field} className="py-2 px-5">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={permission[field] as boolean}
+                                                    onChange={() => handleCheckboxChange(index, field)}
+                                                />
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
+                    {/* {message && <div className="mt-4 text-red-500">{message}</div>} */}
+
+                    <div className="mt-4">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className={`flex items-center px-4 py-2 text-white bg-customgreen-900 rounded-lg hover:bg-customgreen-800 focus:outline-none ${loading ? "opacity-50 cursor-not-allowed" : ""
+                                }`}
+                        >
+                            <span>{loading ? "Saving..." : "Save"}</span>
+                            <FaCheck className="ml-2 text-white" />
+                        </button>
+
+
+                    </div>
                     <div className="mt-4">
                         <button
                             onClick={handleSubmit}
                             disabled={loading}
                             className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none"
                         >
-                            <span>{loading ? 'Saving...' : isEditMode ? 'Update' : 'Save'}</span>
+                            <span>{loading ? "Saving..." : isEditMode ? "Update" : "Save"}</span>
                         </button>
                     </div>
                 </div>

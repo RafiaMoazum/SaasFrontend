@@ -119,9 +119,22 @@ const AddPermissions: React.FC = () => {
                             value={permissionName}
                             onChange={(e) => setPermissionName(e.target.value)}
                             className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter Permission Name"
+                            placeholder="Enter Permission Name (e.g., content, user)"
                         />
+
+                        {/* Note below input */}
+                        {!isEditMode && (
+                            <p className="mt-2 text-xs text-gray-500 bg-gray-100 p-2 rounded-md">
+                                💡 Tip: Just enter the base name like <span className="font-semibold">"content"</span> or <span className="font-semibold">"user"</span>.
+                                The system will automatically create 4 permissions for you:
+                                <span className="font-mono">create_*</span>,
+                                <span className="font-mono">update_*</span>,
+                                <span className="font-mono">view_*</span>, and
+                                <span className="font-mono">delete_*</span>.
+                            </p>
+                        )}
                     </div>
+
                     <div className="mb-4">
                         <label className="block text-sm font-medium">Permission Description</label>
                         <textarea
@@ -149,4 +162,4 @@ const AddPermissions: React.FC = () => {
 };
 
 export default AddPermissions;
-//             
+     

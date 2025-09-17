@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Loading from '@/components/shared/Loading'
-import { protectedRoutes, publicRoutes } from '@/configs/routes.config'
+import { protectedRoutes, publicRoutes, sharedRoutes } from '@/configs/routes.config'
 import appConfig from '@/configs/app.config'
 import PageContainer from '@/components/template/PageContainer'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -67,7 +67,28 @@ const AllRoutes = (props: AllRoutesProps) => {
                     />
                 ))}
             </Route>
+
+
+            {sharedRoutes.map((route) => (
+                <Route
+                    key={route.path}
+                    path={route.path}
+                    element={
+                        <PageContainer {...props} {...route.meta}>
+                            <AppRoute
+                                routeKey={route.key}
+                                component={route.component}
+                                layout="blank" 
+                                {...route.meta}
+                            />
+                        </PageContainer>
+                    }
+                />
+            ))}
         </Routes>
+
+
+
     )
 }
 

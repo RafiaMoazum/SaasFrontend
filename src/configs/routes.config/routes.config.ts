@@ -164,4 +164,16 @@ export const protectedRoutes = [
         ),
         authority: [],
     },
+
+
+]
+
+
+export const sharedRoutes = [
+  {
+    key: 'subscriptionPage',
+    path: '/subscription',
+component: lazy(() => import('@/views/LandingPages/SubscriptionPage')),
+  },
+  
 ]
