@@ -18,6 +18,9 @@ const AddEditPackageFeatures: React.FC = () => {
     const [feature, setFeature] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isFeatureModalOpen, setIsFeatureModalOpen] = useState(false)
+    const [newFeature, setNewFeature] = useState("")
+
 
     const { id } = useParams<{ id: string }>()
     const isEditMode = Boolean(id)
@@ -142,6 +145,7 @@ const AddEditPackageFeatures: React.FC = () => {
                     </div>
                 </div>
             </div>
+            
         </AdaptableCard>
     )
 }

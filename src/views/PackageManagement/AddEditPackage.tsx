@@ -1,3 +1,4 @@
+                                                                                                                                                                                                             
 import React, { useState, useEffect } from 'react'
 import { AdaptableCard } from '@/components/shared'
 import toast from '@/components/ui/toast'
@@ -11,9 +12,10 @@ import Checkbox from '@/components/ui/Checkbox'
 import type { ChangeEvent } from 'react'
 import Button from '@/components/ui/Button'
 
-
 import {
     apiCreatePackage,
+    apiCreatePackageBadge,
+    apiCreatePackageFeature,
     apiGetAllPackageBadges,
     apiGetAllPackageFeatures,
     apiGetPackagesById,
@@ -31,9 +33,9 @@ interface PackageData {
     packageName: string
     description: string
     packageType: string
-    duration: number
+    duration: string
     isActive: boolean
-    badgeId?: string
+    badgeId?: string | null
     pricing: number
     isPromoApplicable: boolean
     AdOnDiscountValue?: number
@@ -66,6 +68,11 @@ const AddEditPackage: React.FC = () => {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+     const [isFeatureModalOpen, setIsFeatureModalOpen] = useState(false)
+    const [newFeature, setNewFeature] = useState("")
+    const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false)
+        const [newBadge, setNewBadge] = useState("")
+    
 
     const { packageId } = useParams<{ packageId: string }>()
     const isEditMode = Boolean(packageId)
@@ -164,10 +171,10 @@ const AddEditPackage: React.FC = () => {
             packageName,
             description,
             packageType,
-            duration: Number(duration),
+            duration: duration,
             pricing: Number(pricing),
             isActive,
-            badgeId,
+            badgeId:badgeId || null,
             isPromoApplicable,
             AdOnDiscountValue: Number(adOnDiscountValue),
             featuresOffered,
@@ -289,10 +296,9 @@ const AddEditPackage: React.FC = () => {
                             <label className="block text-sm font-medium">Duration (in months)</label>
                             <div className="mt-2">
                                 <Input
-                                    type="number"
                                     placeholder="Enter Duration"
                                     value={duration}
-                                    onChange={(e) => setDuration(Number(e.target.value))}
+                                    onChange={(e) => setDuration(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -317,12 +323,14 @@ const AddEditPackage: React.FC = () => {
                         <div className="w-1/2">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-sm font-medium">Features Offered</label>
-                                <a
-                                    href="/addPackageFeature"
+                                <button
+                                    type="button"
+                                    onClick={() => setIsFeatureModalOpen(true)}
                                     className="px-3 py-1 text-sm rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
                                 >
                                     + Add Feature
-                                </a>
+                                </button>
+
                             </div>
 
                             <Select
@@ -348,12 +356,14 @@ const AddEditPackage: React.FC = () => {
                         <div className="w-1/2">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-sm font-medium">Features Not Offered</label>
-                                <a
-                                    href="/addPackageFeature"
+                                <button
+                                    type="button"
+                                    onClick={() => setIsFeatureModalOpen(true)}
                                     className="px-3 py-1 text-sm rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
                                 >
                                     + Add Feature
-                                </a>
+                                </button>
+
                             </div>
 
                             <Select
@@ -380,12 +390,14 @@ const AddEditPackage: React.FC = () => {
                     <div className="w-full mb-4">
                         <div className="flex items-center justify-between mb-2">
                             <label className="block text-sm font-medium">Select Badge</label>
-                            <a
-                                href="/addPackageBadge"
+                            <button
+                                type="button"
+                                onClick={() => setIsBadgeModalOpen(true)}
                                 className="px-3 py-1 text-sm rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
                             >
                                 + Add Badge
-                            </a>
+                            </button>
+
                         </div>
 
                         <Select
@@ -405,8 +417,6 @@ const AddEditPackage: React.FC = () => {
                             }))}
                         />
                     </div>
-
-
 
 
                     
@@ -436,7 +446,7 @@ const AddEditPackage: React.FC = () => {
 
                     {/* Regional Pricing */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">Regional Pricing</label>
+                        <label className="block text-sm font-medium mb-2">Regional Pricing</label>
                         {regionalPricing.map((rp, i) => (
                             <div key={i} className="flex space-x-2 mb-2">
                                 <select
@@ -525,6 +535,135 @@ const AddEditPackage: React.FC = () => {
 
                 </div>
             </div>
+            {isFeatureModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-lg font-semibold mb-4">Add New Feature</h2>
+                        <Input
+                            placeholder="Enter Feature Name"
+                            value={newFeature}
+                            onChange={(e) => setNewFeature(e.target.value)}
+                        />
+                        <div className="flex justify-end space-x-3 mt-4">
+                            <Button
+                                variant="plain"
+                                onClick={() => {
+                                    setIsFeatureModalOpen(false)
+                                    setNewFeature("")
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="solid"
+                                onClick={async () => {
+                                    if (!newFeature.trim()) {
+                                        toast.push(
+                                            <Notification title="Missing Field" type="danger" duration={2500}>
+                                                Feature name is required
+                                            </Notification>,
+                                            { placement: "top-center" }
+                                        )
+                                        return
+                                    }
+
+                                    try {
+                                        const payload = { feature: newFeature }
+                                        const res = await apiCreatePackageFeature(payload)
+
+                                        // Update features list immediately
+                                        setFeatures((prev) => [...prev, res.data.data])
+
+                                        toast.push(
+                                            <Notification title="Successfully Added" type="success" duration={2500}>
+                                                Feature Added Successfully
+                                            </Notification>,
+                                            { placement: "top-center" }
+                                        )
+                                        setIsFeatureModalOpen(false)
+                                        setNewFeature("")
+                                    } catch (error) {
+                                        toast.push(
+                                            <Notification title="Error" type="danger" duration={2500}>
+                                                Failed to add feature
+                                            </Notification>,
+                                            { placement: "top-center" }
+                                        )
+                                    }
+                                }}
+                            >
+                                Save
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isBadgeModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-lg font-semibold mb-4">Add New Badge</h2>
+                        <Input
+                            placeholder="Enter Badge Name"
+                            value={newBadge}
+                            onChange={(e) => setNewBadge(e.target.value)}
+                        />
+                        <div className="flex justify-end space-x-3 mt-4">
+                            <Button
+                                variant="plain"
+                                onClick={() => {
+                                    setIsBadgeModalOpen(false)
+                                    setNewBadge("")
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="solid"
+                                onClick={async () => {
+                                    if (!newBadge.trim()) {
+                                        toast.push(
+                                            <Notification title="Missing Field" type="danger" duration={2500}>
+                                                Badge name is required
+                                            </Notification>,
+                                            { placement: "top-center" }
+                                        )
+                                        return
+                                    }
+
+                                    try {
+                                        const payload = { badgeText: newBadge }
+                                        const res = await apiCreatePackageBadge(payload)
+
+                                        // Update badges list immediately
+                                        setBadges((prev) => [...prev, res.data.data])
+
+                                        toast.push(
+                                            <Notification title="Successfully Added" type="success" duration={2500}>
+                                                Badge Added Successfully
+                                            </Notification>,
+                                            { placement: "top-center" }
+                                        )
+                                        setIsBadgeModalOpen(false)
+                                        setNewBadge("")
+                                    } catch (error) {
+                                        toast.push(
+                                            <Notification title="Error" type="danger" duration={2500}>
+                                                Failed to add badge
+                                            </Notification>,
+                                            { placement: "top-center" }
+                                        )
+                                    }
+                                }}
+                            >
+                                Save
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
         </AdaptableCard>
     )
 }

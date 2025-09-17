@@ -7,12 +7,11 @@ import store, { signOutSuccess, refreshTokenSuccess } from '../store'
 import { apiRefresh } from '@/services/AuthService'
 
 const unauthorizedCode = [401]
-
 let isRefreshing = false
 let failedQueue: any[] = []
 
 const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error)
     } else {
@@ -31,7 +30,7 @@ BaseService.interceptors.request.use(
   (config) => {
     let accessToken: string | null = null
     const { auth } = store.getState()
-    
+
     if (auth?.session?.accessToken) {
       accessToken = auth.session.accessToken
     } else {
@@ -52,9 +51,7 @@ BaseService.interceptors.request.use(
 
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 BaseService.interceptors.response.use(
@@ -63,16 +60,24 @@ BaseService.interceptors.response.use(
     const { response, config } = error
     const originalRequest = config
 
+    // Skip refresh logic for login/signup requests
+    const skipRefresh = ['/auth/login', '/auth/signup'].some((url) =>
+      originalRequest.url?.includes(url)
+    )
+    if (skipRefresh) {
+      return Promise.reject(error)
+    }
+
     if (response && response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
-        }).then(token => {
-          originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${token}`
-          return BaseService(originalRequest)
-        }).catch(err => {
-          return Promise.reject(err)
         })
+          .then((token) => {
+            originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${token}`
+            return BaseService(originalRequest)
+          })
+          .catch((err) => Promise.reject(err))
       }
 
       originalRequest._retry = true
@@ -87,25 +92,19 @@ BaseService.interceptors.response.use(
           throw new Error('No refresh token available')
         }
 
-        const refreshResponse = await apiRefresh({
-          deviceId,
-          refreshToken
-        })
+        const refreshResponse = await apiRefresh({ deviceId, refreshToken })
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+          refreshResponse.data
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResponse.data
+        store.dispatch(
+          refreshTokenSuccess({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          })
+        )
 
-        // Update store with new tokens
-        store.dispatch(refreshTokenSuccess({
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken
-        }))
-
-        // Update the Authorization header
         originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${newAccessToken}`
-
-        // Process queued requests
         processQueue(null, newAccessToken)
-
         return BaseService(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)

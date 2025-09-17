@@ -11,37 +11,50 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/Home')),
         authority: [],
     },
-     {
+    {
         key: 'user-management',
         path: '/userManagement',
-        component: lazy(() => import('@/views/UserManagement/UserManagement')),
+        component: lazy(() => import('@/views/UserManagement/UserList')),
         authority: [],
     },
+    {
+        key: 'add-user',
+        path: '/addUser',
+        component: lazy(() => import('@/views/UserManagement/AddEditUser')),
+        authority: [],
+    },
+    {
+        key: 'edit-user',
+        path: '/editUser',
+        component: lazy(() => import('@/views/UserManagement/AddEditUser')),
+        authority: [],
+    },
+
     {
         key: 'role-management',
         path: '/roleManagement',
         component: lazy(() => import('@/views/RoleManagement/RoleManagement')),
         authority: [],
     },
-     {
+    {
         key: 'add-role',
         path: '/addRole',
         component: lazy(() => import('@/views/RoleManagement/AddRole')),
         authority: [],
     },
-     {
+    {
         key: 'edit-role',
         path: '/editRole/:roleId',
         component: lazy(() => import('@/views/RoleManagement/AddRole')),
         authority: [],
     },
-      {
+    {
         key: 'permissions-management',
         path: '/permissionsList',
         component: lazy(() => import('@/views/Permissions/PermissionsList')),
         authority: [],
     },
-     {
+    {
         key: 'add-permission',
         path: '/addPermission',
         component: lazy(() => import('@/views/Permissions/AddPermissions')),
@@ -59,7 +72,7 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/PromoCodes/PromoCodesList')),
         authority: [],
     },
-     {
+    {
         key: 'add-promoCode',
         path: '/addPromoCode',
         component: lazy(() => import('@/views/PromoCodes/AddEditPromoCodes')),
@@ -78,64 +91,89 @@ export const protectedRoutes = [
         authority: [],
     },
 
-     {
+    {
         key: 'PackageManagement.item1.1',
         path: '/addPackage',
-        component: lazy(() => import('@/views/PackageManagement/AddEditPackage')),
+        component: lazy(
+            () => import('@/views/PackageManagement/AddEditPackage')
+        ),
         authority: [],
     },
 
-     {
+    {
         key: 'PackageManagement.item1.2',
         path: '/editPackage/:packageId',
-        component: lazy(() => import('@/views/PackageManagement/AddEditPackage')),
+        component: lazy(
+            () => import('@/views/PackageManagement/AddEditPackage')
+        ),
         authority: [],
     },
 
-     //**************************Package Features************************************* */
-     {
+    //**************************Package Features************************************* */
+    {
         key: 'PackageManagement.item2',
         path: '/packageFeaturesList',
-        component: lazy(() => import('@/views/PackageFeatures/PackageFeaturesList')),
+        component: lazy(
+            () => import('@/views/PackageFeatures/PackageFeaturesList')
+        ),
         authority: [],
     },
 
-     {
+    {
         key: 'PackageManagement.item2.1',
         path: '/addPackageFeature',
-        component: lazy(() => import('@/views/PackageFeatures/AddEditPackageFeaturesList')),
+        component: lazy(
+            () => import('@/views/PackageFeatures/AddEditPackageFeaturesList')
+        ),
         authority: [],
     },
 
-     {
+    {
         key: 'PackageManagement.item2.2',
         path: '/editPackageFeature/:id',
-        component: lazy(() => import('@/views/PackageFeatures/AddEditPackageFeaturesList')),
+        component: lazy(
+            () => import('@/views/PackageFeatures/AddEditPackageFeaturesList')
+        ),
         authority: [],
     },
 
-
-     //**************************Package Badge************************************* */
-     {
+    //**************************Package Badge************************************* */
+    {
         key: 'PackageManagement.item3',
         path: '/packageBadgesList',
-        component: lazy(() => import('@/views/PackageBadges/PackageBadgesList')),
+        component: lazy(
+            () => import('@/views/PackageBadges/PackageBadgesList')
+        ),
         authority: [],
     },
 
-     {
+    {
         key: 'PackageManagement.item3.1',
         path: '/addPackageBadge',
-        component: lazy(() => import('@/views/PackageBadges/AddEditPackageBadge')),
+        component: lazy(
+            () => import('@/views/PackageBadges/AddEditPackageBadge')
+        ),
         authority: [],
     },
 
-     {
+    {
         key: 'PackageManagement.item3.2',
         path: '/editPackageBadge/:id',
-        component: lazy(() => import('@/views/PackageBadges/AddEditPackageBadge')),
+        component: lazy(
+            () => import('@/views/PackageBadges/AddEditPackageBadge')
+        ),
         authority: [],
     },
 
 
+]
+
+
+export const sharedRoutes = [
+  {
+    key: 'subscriptionPage',
+    path: '/subscription',
+component: lazy(() => import('@/views/LandingPages/SubscriptionPage')),
+  },
+  
 ]

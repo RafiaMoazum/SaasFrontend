@@ -1,7 +1,7 @@
 import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
-    NAV_ITEM_TYPE_COLLAPSE
+    NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
@@ -10,17 +10,15 @@ const navigationConfig: NavigationTree[] = [
         key: 'home',
         path: '/home',
         title: 'Home',
-        translateKey: 'nav.home',
         icon: 'home',
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
     },
-     {
+    {
         key: 'user-management',
         path: '/userManagement',
-        title: 'User',
-        translateKey: 'nav.userManagement',
+        title: 'Users',
         icon: 'User',
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
@@ -29,9 +27,8 @@ const navigationConfig: NavigationTree[] = [
     {
         key: 'role-management',
         path: '/roleManagement',
-        title: 'Role',
-        translateKey: 'nav.role',
-        icon: 'singleMenu',
+        title: 'Roles',
+        icon: 'Role',
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
@@ -39,9 +36,8 @@ const navigationConfig: NavigationTree[] = [
     {
         key: 'permissions-management',
         path: '/permissionsList',
-        title: 'Permission',
-        translateKey: 'nav.permissions-management',
-        icon: 'singleMenu',
+        title: 'Permissions',
+        icon: 'Permission',
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
@@ -51,8 +47,8 @@ const navigationConfig: NavigationTree[] = [
         key: 'promo-codes',
         path: '/promoCodesList',
         title: 'Promo Codes',
-        translateKey: 'nav.promoCodes',
-        icon: 'singleMenu',
+
+        icon: 'Promo',
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
@@ -61,9 +57,8 @@ const navigationConfig: NavigationTree[] = [
     {
         key: 'PackageManagement',
         path: '',
-        title: 'Package Management',
-        translateKey: 'nav.PackageManagement.PackageManagement',
-        icon: 'collapseMenu',
+        title: 'Packages',
+        icon: 'Package',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
@@ -71,37 +66,33 @@ const navigationConfig: NavigationTree[] = [
                 key: 'PackageManagement.item1',
                 path: '/packageList',
                 title: 'Package List',
-                translateKey: 'nav.PackageManagement.item1',
                 icon: '',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
             },
-             {
+            {
                 key: 'PackageManagement.item2',
                 path: '/packageFeaturesList',
                 title: 'Package Features',
-                translateKey: 'nav.PackageManagement.item2',
+
                 icon: '',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
             },
-             {
+            {
                 key: 'PackageManagement.item3',
                 path: '/packageBadgesList',
                 title: 'Package Badges',
-                translateKey: 'nav.PackageManagement.item3',
+
                 icon: '',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
             },
-           
         ],
     },
-    
-   
 ]
 
 export default navigationConfig

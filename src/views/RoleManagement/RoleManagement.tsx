@@ -1,153 +1,250 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi'
-import Button from '@/components/ui/Button';
-import { HiDownload, HiPlusCircle } from 'react-icons/hi';
-import useThemeClass from '@/utils/hooks/useThemeClass'
-import { Link } from 'react-router-dom';
-import AdaptableCard from '@/components/shared/AdaptableCard';
-import { apiDeleteRole, apiGetAllRoles } from "@/services/RoleApiService";
+import { useState, useMemo, useEffect } from "react"
+import Table from "@/components/ui/Table"
+import Pagination from "@/components/ui/Pagination"
+import Select from "@/components/ui/Select"
+import {
+    useReactTable,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    flexRender,
+} from "@tanstack/react-table"
+import type { ColumnDef } from "@tanstack/react-table"
+import AdaptableCard from "@/components/shared/AdaptableCard"
+import { Link, useNavigate } from "react-router-dom"
+import { HiOutlinePencil, HiOutlineTrash, HiPlusCircle } from "react-icons/hi"
+import Button from "@/components/ui/Button"
+import { apiDeleteRole, apiGetAllRoles } from "@/services/RoleApiService"
+
+const { Tr, Th, Td, THead, TBody } = Table
+
+const pageSizeOption = [
+    { value: 10, label: "10 / page" },
+    { value: 20, label: "20 / page" },
+    { value: 30, label: "30 / page" },
+    { value: 40, label: "40 / page" },
+    { value: 50, label: "50 / page" },
+]
+
+const RoleManagementTable = () => {
+    const [showModal, setShowModal] = useState<boolean>(false)
+    const [roles, setRoles] = useState<any[]>([])
+    const [loading, setLoading] = useState<boolean>(false)
+    const [error, setError] = useState<string | null>(null)
+    const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null)
+    const navigate = useNavigate()
+
+    // columns mapped to role fields
+    const columns = useMemo<ColumnDef<any>[]>(
+        () => [
+            { header: "Role Name", accessorKey: "roleName" },
+            { header: "Description", accessorKey: "roleDescription" },
+            {
+                header: "Permissions",
+                accessorFn: (row) => row.permissions, // keep the array from backend
+                cell: ({ getValue }) => {
+                    const permissionsRaw = getValue<any>() // could be array or something else
+                    const permissions = Array.isArray(permissionsRaw) ? permissionsRaw : []
+
+                    if (permissions.length === 0) {
+                        return <span className="text-gray-400">None</span>
+                    }
+
+                    // Group by suffix (e.g., "users", "content")
+                    const grouped: Record<string, string[]> = {}
+                    permissions.forEach((p) => {
+                        const parts = p.permissionName.split("_")
+                        const category = parts[parts.length - 1] // suffix
+                        if (!grouped[category]) grouped[category] = []
+                        grouped[category].push(p.permissionName)
+                    })
+
+                    return (
+                        <div className="space-y-3">
+                            {Object.entries(grouped).map(([category, perms]) => (
+                                <div key={category}>
+                                    <div className="font-semibold text-xs mb-1 capitalize text-gray-700">
+                                        {category}
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1">
+                                        {perms.map((perm) => (
+                                            <span
+                                                key={perm}
+                                                className="text-xs px-2 py-1 bg-gray-100 rounded"
+                                            >
+                                                {perm}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )
+                },
+            },
 
 
+            {
+                header: "Actions",
+                id: "actions",
+                cell: ({ row }) => (
+                    <div className="flex justify-start text-lg">
+                        <span
+                            className="cursor-pointer p-2 hover:text-blue-500"
+                            onClick={() => handleEdit(row.original.id)}
+                        >
+                            <HiOutlinePencil />
+                        </span>
+                        <span
+                            className="cursor-pointer p-2 hover:text-red-500"
+                            onClick={() => handleDelete(row.original.id)}
+                        >
+                            <HiOutlineTrash />
+                        </span>
+                    </div>
+                ),
+            },
+        ],
+        []
+    )
 
+    const table = useReactTable({
+        data: roles,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+    })
 
-interface Role {
-    id: number;
-    roleName: string;
-    roleDescription: string;
-}
+    const onPaginationChange = (page: number) => {
+        table.setPageIndex(page - 1)
+    }
 
-interface RolesResponse {
-    data: {
-        roles: Role[];
-    };
-}
+    const onSelectChange = (value = 0) => {
+        table.setPageSize(Number(value))
+    }
 
-const RoleManagement: React.FC = () => {
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-    const [showModal, setShowModal] = useState<boolean>(false);
-    const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
-    const { textTheme } = useThemeClass()
-
-    const navigate = useNavigate();
-
+    // fetch roles
     useEffect(() => {
         const fetchRoles = async () => {
-            setLoading(true);
-            setError(null);
+            setLoading(true)
+            setError(null)
             try {
-                const fetchedRoles = (await apiGetAllRoles()) as RolesResponse;
-                console.log("Fetched roles:", fetchedRoles.data.data);
-                setRoles(fetchedRoles.data.data);
+                const res = await apiGetAllRoles()
+                console.log("Fetched roles:", res.data.data)
+                setRoles(res.data.data) // directly array
             } catch (err: any) {
-                setError("Failed to fetch roles");
+                setError("Failed to fetch roles")
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchRoles();
-    }, []);
+        fetchRoles()
+    }, [])
 
-    const handleEdit = (roleId: number): void => {
-        navigate(`/editRole/${roleId}`);
-    };
+    const handleEdit = (id: string) => {
+        navigate(`/editRole/${id}`)
+    }
 
-    const handleDelete = (id: number): void => {
-        setSelectedRoleId(id);
-        setShowModal(true); // Show the modal
-    };
+    const handleDelete = (id: string) => {
+        setSelectedRoleId(id)
+        setShowModal(true)
+    }
 
     const confirmDelete = async (): Promise<void> => {
-        if (selectedRoleId === null) return;
+        if (!selectedRoleId) return
 
         try {
-            // Call the delete API
-            await apiDeleteRole({ id: selectedRoleId });
-
-            // Remove the deleted role from the state
-            setRoles((prevRoles) =>
-                prevRoles.filter((role) => role.id !== selectedRoleId)
-            );
-
-            console.log("Role deleted successfully:", selectedRoleId);
+            await apiDeleteRole({ id: selectedRoleId })
+            setRoles((prev) => prev.filter((role) => role.id !== selectedRoleId))
+            console.log("Role deleted successfully:", selectedRoleId)
         } catch (error) {
-            console.error("Failed to delete role:", error);
-            alert("An error occurred while trying to delete the role.");
+            console.error("Failed to delete role:", error)
+            alert("An error occurred while deleting the role.")
         } finally {
-            setShowModal(false);
-            setSelectedRoleId(null);
+            setShowModal(false)
+            setSelectedRoleId(null)
         }
-    };
-
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+    }
 
     return (
-        <AdaptableCard className="h-full " bodyClass="h-full">
-            <div>
-                <div className="bg-white rounded-lg">
-                    <div className="flex flex-row justify-between items-center pb-4">
-                        <h3 className="mb-4 lg:mb-0">Roles List</h3>
-
-                        <Link
-                            className="block lg:inline-block md:mb-0 mb-4"
-                            to="/addRole"
+        <AdaptableCard className="h-full" bodyClass="h-full">
+            <div className="bg-white rounded-lg">
+                <div className="flex flex-row justify-between items-center pb-4">
+                    <h3 className="mb-4 lg:mb-0">Roles List</h3>
+                    <Link to="/addRole">
+                        <Button
+                            block
+                            variant="solid"
+                            size="sm"
+                            icon={<HiPlusCircle />}
                         >
-                            <Button block variant="solid" size="sm" icon={<HiPlusCircle />}>
-                                Add Role
-                            </Button>
-                        </Link>
-
-                    </div>
-                    <table className="min-w-full table-auto text-left border-collapse">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-gray-600">Role Name</th>
-                                <th className="px-6 py-3 text-gray-600">Description</th>
-                                <th className="px-6 py-3 text-gray-600 text-right pr-10">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Array.isArray(roles) && roles.length > 0 ? (
-                                roles.map((role) => (
-                                    <tr key={role.id} className="border-t">
-                                        <td className="px-6 py-3">{role.roleName}</td>
-                                        <td className="px-6 py-3">{role.roleDescription}</td>
-                                        <td className="px-6 py-3">
-                                            <div className="flex justify-end text-lg">
-                                                <span
-                                                    className={`cursor-pointer p-2 hover:${textTheme}`}
-                                                    onClick={() => handleEdit(role.id)}
-                                                >
-                                                    <HiOutlinePencil />
-                                                </span>
-                                                <span
-                                                    className="cursor-pointer p-2 hover:text-red-500"
-                                                    onClick={() => handleDelete(role.id)}
-                                                >
-                                                    <HiOutlineTrash />
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={3} className="text-center px-6 py-3">
-                                        No roles available
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-
+                            Add Role
+                        </Button>
+                    </Link>
                 </div>
+
+                {loading && <p>Loading...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+
+                {!loading && !error && (
+                    <>
+                        <Table>
+                            <THead>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <Tr key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <Th key={header.id} colSpan={header.colSpan}>
+                                                {flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
+                                            </Th>
+                                        ))}
+                                    </Tr>
+                                ))}
+                            </THead>
+                            <TBody>
+                                {table.getRowModel().rows.map((row) => (
+                                    <Tr key={row.id}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <Td key={cell.id}>
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext()
+                                                )}
+                                            </Td>
+                                        ))}
+                                    </Tr>
+                                ))}
+                            </TBody>
+                        </Table>
+                        <div className="flex items-center justify-between mt-4">
+                            <Pagination
+                                pageSize={table.getState().pagination.pageSize}
+                                currentPage={table.getState().pagination.pageIndex + 1}
+                                total={roles.length}
+                                onChange={onPaginationChange}
+                            />
+                            <div style={{ minWidth: 130 }}>
+                                <Select
+                                    size="sm"
+                                    isSearchable={false}
+                                    value={pageSizeOption.filter(
+                                        (option) =>
+                                            option.value ===
+                                            table.getState().pagination.pageSize
+                                    )}
+                                    options={pageSizeOption}
+                                    onChange={(option) =>
+                                        onSelectChange(option?.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Modal */}
@@ -173,9 +270,8 @@ const RoleManagement: React.FC = () => {
                     </div>
                 </div>
             )}
-
         </AdaptableCard>
-    );
-};
+    )
+}
 
-export default RoleManagement;
+export default RoleManagementTable
