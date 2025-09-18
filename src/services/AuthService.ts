@@ -75,7 +75,21 @@ export async function apiResetPassword(data: ResetPassword) {
 }
 export async function apiChangePassword(data: changePassword) {
     return ApiService.fetchData({
-        url: '/auth/password/set-password',
+        url: '/auth/password/change-password',
+        method: 'post',
+        data,
+    })
+}
+export async function apiDevicelogs(data: any) {
+    return ApiService.fetchData({
+        url: '/auth/device-logs',
+        method: 'get',
+        data,
+    })
+}
+export async function apiSignOutAllDevices(data: any) {
+    return ApiService.fetchData({
+        url: '/auth/logout-all',
         method: 'post',
         data,
     })

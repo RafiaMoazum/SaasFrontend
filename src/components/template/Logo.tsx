@@ -12,22 +12,15 @@ interface LogoProps extends CommonProps {
 const LOGO_SRC_PATH = '/img/logo/'
 
 const Logo = (props: LogoProps) => {
-    const {
-        type = 'full',
-        mode = 'dark',
-        className,
-        imgClass,
-        style,
-    } = props
+    const { type = 'full', mode = 'dark', className, imgClass, style } = props
 
-   
     const computedWidth = type === 'full' ? '90%' : '100%'
 
     return (
         <div
             className={classNames(
                 'logo mt-[20px] mb-[6px]',
-                type === 'full' && 'ml-[12px]', 
+                type === 'full' && 'ml-[12px]',
                 type === 'streamline' && 'ml-[2px]',
                 className
             )}

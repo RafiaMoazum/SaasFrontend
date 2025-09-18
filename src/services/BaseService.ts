@@ -8,6 +8,7 @@ import { apiRefresh } from '@/services/AuthService'
 
 const unauthorizedCode = [401]
 let isRefreshing = false
+let refreshPromise: Promise<string> | null = null
 let failedQueue: any[] = []
 
 const processQueue = (error: any, token: string | null = null) => {
@@ -60,8 +61,8 @@ BaseService.interceptors.response.use(
     const { response, config } = error
     const originalRequest = config
 
-    // Skip refresh logic for login/signup requests
-    const skipRefresh = ['/auth/login', '/auth/signup'].some((url) =>
+    // Skip refresh logic for auth-related requests
+    const skipRefresh = ['/auth/login', '/auth/signup', '/auth/refresh-token'].some((url) =>
       originalRequest.url?.includes(url)
     )
     if (skipRefresh) {
@@ -69,53 +70,88 @@ BaseService.interceptors.response.use(
     }
 
     if (response && response.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        })
-          .then((token) => {
-            originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${token}`
-            return BaseService(originalRequest)
-          })
-          .catch((err) => Promise.reject(err))
-      }
-
       originalRequest._retry = true
-      isRefreshing = true
 
-      try {
-        const state = store.getState()
-        const refreshToken = state.auth.session.refreshToken
-        const deviceId = localStorage.getItem('deviceId') || ''
-
-        if (!refreshToken) {
-          throw new Error('No refresh token available')
+      // If already refreshing, wait for the existing refresh to complete
+      if (isRefreshing && refreshPromise) {
+        try {
+          const newToken = await refreshPromise
+          originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${newToken}`
+          return BaseService(originalRequest)
+        } catch (refreshError) {
+          return Promise.reject(refreshError)
         }
-
-        const refreshResponse = await apiRefresh({ deviceId, refreshToken })
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          refreshResponse.data
-
-        store.dispatch(
-          refreshTokenSuccess({
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-          })
-        )
-
-        originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${newAccessToken}`
-        processQueue(null, newAccessToken)
-        return BaseService(originalRequest)
-      } catch (refreshError) {
-        processQueue(refreshError, null)
-        store.dispatch(signOutSuccess())
-        return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
       }
+
+      // If not refreshing, start the refresh process
+      if (!isRefreshing) {
+        isRefreshing = true
+        
+        refreshPromise = new Promise(async (resolve, reject) => {
+          try {
+            const state = store.getState()
+            const refreshToken = state.auth.session?.refreshToken
+            const deviceId = localStorage.getItem('deviceId') || ''
+
+            if (!refreshToken) {
+              throw new Error('No refresh token available')
+            }
+
+            console.log('🔄 Attempting token refresh...')
+            const refreshResponse = await apiRefresh({ deviceId, refreshToken })
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+              refreshResponse.data
+
+            // Update Redux store
+            store.dispatch(
+              refreshTokenSuccess({
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken,
+              })
+            )
+
+            console.log('✅ Token refresh successful')
+            processQueue(null, newAccessToken)
+            resolve(newAccessToken)
+          } catch (refreshError: any) {
+            console.error('❌ Token refresh failed:', refreshError.response?.data?.message || refreshError.message)
+            processQueue(refreshError, null)
+            
+            // Only sign out if it's actually an invalid refresh token, not a network error
+            if (refreshError.response?.status === 401 || refreshError.response?.data?.message?.includes('Invalid refresh token')) {
+              store.dispatch(signOutSuccess())
+            }
+            
+            reject(refreshError)
+          } finally {
+            isRefreshing = false
+            refreshPromise = null
+          }
+        })
+
+        try {
+          const newToken = await refreshPromise
+          originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${newToken}`
+          return BaseService(originalRequest)
+        } catch (refreshError) {
+          return Promise.reject(refreshError)
+        }
+      }
+
+      // If somehow we get here (shouldn't happen), add to queue
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ 
+          resolve: (token: string) => {
+            originalRequest.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE}${token}`
+            resolve(BaseService(originalRequest))
+          }, 
+          reject 
+        })
+      })
     }
 
-    if (response && unauthorizedCode.includes(response.status)) {
+    // Handle other unauthorized responses
+    if (response && unauthorizedCode.includes(response.status) && !originalRequest._retry) {
       store.dispatch(signOutSuccess())
     }
 
