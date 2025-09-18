@@ -199,9 +199,9 @@ const SignUpForm = (props: SignUpFormProps) => {
                             <Button
                                 block
                                 loading={isSubmitting}
-                                variant="default"
+                                variant="solid"
                                 type="submit"
-                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
+                                className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {isSubmitting
                                     ? 'Creating Account...'

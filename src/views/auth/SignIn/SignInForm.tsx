@@ -146,9 +146,9 @@ const SignInForm = (props: SignInFormProps) => {
                             <Button
                                 block
                                 loading={isSubmitting}
-                                variant="default"
+                                variant="solid"
                                 type="submit"
-                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
+                                className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {isSubmitting ? 'Signing in...' : 'Sign In'}
                             </Button>

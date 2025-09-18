@@ -56,7 +56,8 @@ const DefaultItem = (props: DefaultItemProps) => {
                     }
                     className="h-full w-full flex items-center  rounded-md 
                hover:bg-custom-dark-800  
-               aria-[current=page]:bg-custom-dark-800 "
+               aria-[current=page]:bg-custom-dark-800
+               aria-[current=page]:text-emerald-300"
                     onClick={() =>
                         onLinkClick?.({
                             key: nav.key,

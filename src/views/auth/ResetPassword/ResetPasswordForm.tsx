@@ -151,6 +151,7 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
                                         loading={isSubmitting}
                                         variant="solid"
                                         type="submit"
+                                        className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white"
                                     >
                                         {isSubmitting
                                             ? 'Submiting...'
@@ -160,10 +161,10 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
                             ) : (
                                 <Button
                                     block
-                                    variant="default"
+                                    variant="solid"
                                     type="button"
                                     onClick={onContinue}
-                                    className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
+                                    className="!bg-custom-dark-600 hover:!bg-custom-dark-400 transition-colors duration-200 text-white" 
                                 >
                                     Continue
                                 </Button>

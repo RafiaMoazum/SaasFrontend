@@ -1,186 +1,388 @@
+import React, { useState, useEffect } from 'react'
 import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
 import Upload from '@/components/ui/Upload'
 import Button from '@/components/ui/Button'
 import Select from '@/components/ui/Select'
-import Switcher from '@/components/ui/Switcher'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import { FormContainer } from '@/components/ui/Form'
-import FormDesription from './FormDesription'
-import FormRow from './FormRow'
+import Skeleton from '@/components/ui/Skeleton'
 import { Field, Form, Formik } from 'formik'
-import { components } from 'react-select'
 import {
     HiOutlineUserCircle,
     HiOutlineMail,
-    HiOutlineBriefcase,
     HiOutlineUser,
-    HiCheck,
     HiOutlineGlobeAlt,
 } from 'react-icons/hi'
 import * as Yup from 'yup'
-import type { OptionProps, ControlProps } from 'react-select'
-import type { FormikProps, FieldInputProps, FieldProps } from 'formik'
+import { apiUpdateUser, apiGetUserById } from '@/services/UserAPIService'
+import { useAppDispatch, useAppSelector } from '@/store'
+import { setUser } from '@/store/slices/auth/userSlice'
+import { AxiosError } from 'axios'
 
 export type ProfileFormModel = {
-    name: string
+    firstName: string
+    lastName: string
     email: string
-    title: string
-    avatar: string
-    timeZone: string
-    lang: string
-    syncData: boolean
+    profileImage: string | null
+    country: string
 }
-
-type ProfileProps = {
-    data?: ProfileFormModel
-}
-
-type LanguageOption = {
-    value: string
-    label: string
-    imgPath: string
-}
-
-const { Control } = components
 
 const validationSchema = Yup.object().shape({
-    name: Yup.string()
-        .min(3, 'Too Short!')
-        .max(12, 'Too Long!')
-        .required('User Name Required'),
-    email: Yup.string().email('Invalid email').required('Email Required'),
-    title: Yup.string(),
-    avatar: Yup.string(),
-    lang: Yup.string(),
+    firstName: Yup.string()
+        .min(2, 'Min 2 characters')
+        .max(50, 'Max 50 characters')
+        .required('First name is required'),
+    lastName: Yup.string()
+        .min(2, 'Min 2 characters')
+        .max(50, 'Max 50 characters')
+        .required('Last name is required'),
+    email: Yup.string()
+        .email('Email must be a valid email')
+        .required('Email is required')
+        .test(
+            'domain-has-dot',
+            'Email must include user@domain.com',
+            function (value) {
+                if (!value) return true
+                const parts = value.split('@')
+                if (parts.length !== 2) return false
+                return parts[1].includes('.')
+            }
+        ),
+    country: Yup.string()
+        .min(2, 'Min 2 characters')
+        .max(100, 'Max 100 characters')
+        .transform((value) => {
+            return value.replace(/\w\S*/g, (txt) => {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+            })
+        }),
     timeZone: Yup.string(),
-    syncData: Yup.bool(),
 })
 
-const langOptions: LanguageOption[] = [
-    { value: 'en', label: 'English (US)', imgPath: '/img/countries/us.png' },
-    { value: 'ch', label: '中文', imgPath: '/img/countries/cn.png' },
-    { value: 'jp', label: '日本语', imgPath: '/img/countries/jp.png' },
-    { value: 'fr', label: 'French', imgPath: '/img/countries/fr.png' },
-]
-
-const CustomSelectOption = ({
-    innerProps,
-    label,
-    data,
-    isSelected,
-}: OptionProps<LanguageOption>) => {
-    return (
-        <div
-            className={`flex items-center justify-between p-2 ${
-                isSelected
-                    ? 'bg-gray-100 dark:bg-gray-500'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-600'
-            }`}
-            {...innerProps}
-        >
-            <div className="flex items-center">
-                <Avatar shape="circle" size={20} src={data.imgPath} />
-                <span className="ml-2 rtl:mr-2">{label}</span>
-            </div>
-            {isSelected && <HiCheck className="text-emerald-500 text-xl" />}
+// Skeleton Loader for Profile Form
+const ProfileSkeleton = () => (
+    <div className="space-y-6">
+        <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-2">General</h3>
+            <p className="text-gray-500 text-sm">
+                Basic info, like your name and address that will displayed in
+                public
+            </p>
         </div>
-    )
-}
+        <div className="flex space-x-4">
+            <div className="w-1/2">
+                <Skeleton height={20} width={80} className="mb-2" />
+                <Skeleton height={40} className="rounded-md" />
+            </div>
+            <div className="w-1/2">
+                <Skeleton height={20} width={80} className="mb-2" />
+                <Skeleton height={40} className="rounded-md" />
+            </div>
+        </div>
+        <div>
+            <Skeleton height={20} width={50} className="mb-2" />
+            <Skeleton height={40} className="rounded-md" />
+        </div>
+        <div>
+            <Skeleton height={20} width={70} className="mb-2" />
+            <Skeleton height={40} className="rounded-md" />
+        </div>
+        <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-2">Preferences</h3>
+            <p className="text-gray-500 text-sm">
+                Your personalized preference displayed in your account
+            </p>
+        </div>
+        <div>
+            <Skeleton height={20} width={80} className="mb-2" />
+            <Skeleton height={40} className="rounded-md" />
+        </div>
+        <div>
+            <Skeleton height={20} width={80} className="mb-2" />
+            <Skeleton height={40} className="rounded-md" />
+        </div>
+        <div className="flex gap-4 mt-8 pt-4">
+            <Skeleton height={40} width={80} className="rounded-md" />
+            <Skeleton height={40} width={120} className="rounded-md" />
+        </div>
+    </div>
+)
 
-const CustomControl = ({
-    children,
-    ...props
-}: ControlProps<LanguageOption>) => {
-    const selected = props.getValue()[0]
-    return (
-        <Control {...props}>
-            {selected && (
-                <Avatar
-                    className="ltr:ml-4 rtl:mr-4"
-                    shape="circle"
-                    size={18}
-                    src={selected.imgPath}
-                />
-            )}
-            {children}
-        </Control>
-    )
-}
+const Profile = () => {
+    const [countries, setCountries] = useState<
+        { name: string; flag: string }[]
+    >([])
+    const [countriesLoading, setCountriesLoading] = useState(false)
+    const [avatarImg, setAvatarImg] = useState<string | null>(null)
+    const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
+    const [loading, setLoading] = useState(false)
+    const [userDataLoading, setUserDataLoading] = useState(true)
 
-const Profile = ({
-    data = {
-        name: '',
+    const dispatch = useAppDispatch()
+    const user = useAppSelector((state) => state.auth.user)
+
+    const [initialData, setInitialData] = useState<ProfileFormModel>({
+        firstName: '',
+        lastName: '',
         email: '',
-        title: '',
-        avatar: '',
-        timeZone: '',
-        lang: '',
-        syncData: false,
-    },
-}: ProfileProps) => {
-    const onSetFormFile = (
-        form: FormikProps<ProfileFormModel>,
-        field: FieldInputProps<ProfileFormModel>,
-        file: File[]
-    ) => {
-        form.setFieldValue(field.name, URL.createObjectURL(file[0]))
+        profileImage: null,
+        country: '',
+    })
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (user?.id) {
+                try {
+                    setUserDataLoading(true)
+                    const response = await apiGetUserById(user.id)
+                    const userData = response?.data?.data
+
+                    if (userData) {
+                        const formattedUserData: ProfileFormModel = {
+                            firstName: userData.firstName || '',
+                            lastName: userData.lastName || '',
+                            email: userData.email || '',
+                            profileImage: userData.profileImage
+                                ? `/uploads/${userData.profileImage}`
+                                : null,
+                            country: userData.country
+                                ? userData.country.charAt(0).toUpperCase() +
+                                  userData.country.slice(1)
+                                : '',
+                        }
+                        setInitialData(formattedUserData)
+                        setAvatarImg(formattedUserData.profileImage)
+
+                        dispatch(setUser(userData))
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user data:', error)
+                    toast.push(
+                        <Notification
+                            title="Error"
+                            type="danger"
+                            duration={2500}
+                        >
+                            Failed to fetch user data
+                        </Notification>
+                    )
+                } finally {
+                    setUserDataLoading(false)
+                }
+            } else {
+                setUserDataLoading(false)
+            }
+        }
+
+        fetchUserData()
+    }, [user?.id, dispatch])
+
+    useEffect(() => {
+        const fetchCountries = async () => {
+            setCountriesLoading(true)
+            try {
+                // Fetch country codes from FlagCDN
+                const res = await fetch('https://flagcdn.com/en/codes.json')
+                const data = await res.json()
+
+                // Map into your expected format using FlagCDN PNG flags
+                const formatted = Object.entries(data).map(([code, name]) => ({
+                    name: name as string,
+                    flag: `https://flagcdn.com/w40/${code}.png`, // w40 = 40px wide flags
+                }))
+
+                setCountries(formatted)
+            } catch (error) {
+                console.error('Failed to fetch countries:', error)
+                toast.push(
+                    <Notification title="Error" type="danger" duration={2500}>
+                        Failed to fetch countries
+                    </Notification>
+                )
+            } finally {
+                setCountriesLoading(false)
+            }
+        }
+
+        fetchCountries()
+    }, [])
+
+    const beforeUpload = (files: FileList | null) => {
+        let valid: string | boolean = true
+        const allowedFileType = ['image/jpeg', 'image/png']
+        const maxFileSize = 5 * 1024 * 1024 // 5MB
+
+        if (files) {
+            for (const file of files) {
+                if (!allowedFileType.includes(file.type)) {
+                    valid = 'Please upload a .jpeg or .png file!'
+                }
+
+                if (file.size > maxFileSize) {
+                    valid = 'File size must be less than 5MB!'
+                }
+            }
+        }
+        return valid
     }
 
-    const onFormSubmit = (
+    const onSetFormFile = (files: File[]) => {
+        if (files.length > 0) {
+            const file = files[0]
+            setAvatarImg(URL.createObjectURL(file))
+            setProfileImageFile(file)
+        }
+    }
+
+    const onFormSubmit = async (
         values: ProfileFormModel,
         setSubmitting: (isSubmitting: boolean) => void
     ) => {
-        console.log('values', values)
-        toast.push(<Notification title={'Profile updated'} type="success" />, {
-            placement: 'top-center',
-        })
-        setSubmitting(false)
+        try {
+            setLoading(true)
+            const formData = new FormData()
+            formData.append('firstName', values.firstName)
+            formData.append('lastName', values.lastName)
+            formData.append('email', values.email)
+            formData.append('country', values.country)
+            // Don't send timeZone to backend as requested
+
+            if (profileImageFile) {
+                formData.append('profileImage', profileImageFile)
+            } else if (avatarImg && avatarImg.startsWith('blob:')) {
+                const existingFileName = user.profileImage
+                if (existingFileName) {
+                    formData.append('profileImage', existingFileName)
+                }
+            }
+
+            const res = await apiUpdateUser(user.id, formData)
+
+            const updatedUser = res?.data?.data
+            if (updatedUser) {
+                dispatch(setUser(updatedUser))
+            }
+
+            toast.push(
+                <Notification title={'Profile updated'} type="success" />,
+                { placement: 'top-center' }
+            )
+        } catch (error) {
+            console.error('Submit error:', error)
+            let message = 'An unknown error occurred'
+
+            if (error instanceof AxiosError) {
+                message =
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    'Failed to update profile'
+            }
+
+            toast.push(
+                <Notification title="Error" type="danger" duration={4000}>
+                    {message}
+                </Notification>
+            )
+        } finally {
+            setLoading(false)
+            setSubmitting(false)
+        }
+    }
+
+    if (userDataLoading || (countriesLoading && !countries.length)) {
+        return (
+            <FormContainer>
+                <ProfileSkeleton />
+            </FormContainer>
+        )
     }
 
     return (
         <Formik
             enableReinitialize
-            initialValues={data}
+            initialValues={initialData}
             validationSchema={validationSchema}
             onSubmit={(values, { setSubmitting }) => {
                 setSubmitting(true)
-                setTimeout(() => {
-                    onFormSubmit(values, setSubmitting)
-                }, 1000)
+                onFormSubmit(values, setSubmitting)
             }}
         >
-            {({ values, touched, errors, isSubmitting, resetForm }) => {
-                const validatorProps = { touched, errors }
+            {({
+                values,
+                touched,
+                errors,
+                isSubmitting,
+                resetForm,
+                setFieldValue,
+            }) => {
+                const selectedCountry = countries.find(
+                    (c) => c.name === values.country
+                )
+
                 return (
                     <Form>
                         <FormContainer>
-                            <FormDesription
-                                title="General"
-                                desc="Basic info, like your name and address that will displayed in public"
-                            />
-                            <FormRow
-                                name="name"
-                                label="Name"
-                                {...validatorProps}
-                            >
-                                <Field
-                                    type="text"
-                                    autoComplete="off"
-                                    name="name"
-                                    placeholder="Name"
-                                    component={Input}
-                                    prefix={
-                                        <HiOutlineUserCircle className="text-xl" />
-                                    }
-                                />
-                            </FormRow>
-                            <FormRow
-                                name="email"
-                                label="Email"
-                                {...validatorProps}
-                            >
+                            {/* General Section */}
+                            <div className="mb-8">
+                                <h3 className="text-lg font-semibold mb-2">
+                                    General
+                                </h3>
+                                <p className="text-gray-500 text-sm">
+                                    Basic info, like your name and address that
+                                    will displayed in public
+                                </p>
+                            </div>
+
+                            <div className="mb-4 flex space-x-4">
+                                <div className="w-1/2">
+                                    <label className="block text-sm font-medium mb-2">
+                                        First Name
+                                    </label>
+                                    <Field
+                                        type="text"
+                                        autoComplete="off"
+                                        name="firstName"
+                                        placeholder="First Name"
+                                        component={Input}
+                                        prefix={
+                                            <HiOutlineUserCircle className="text-xl" />
+                                        }
+                                    />
+                                    {errors.firstName && touched.firstName && (
+                                        <div className="text-red-500 text-sm mt-1">
+                                            {errors.firstName}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="w-1/2">
+                                    <label className="block text-sm font-medium mb-2">
+                                        Last Name
+                                    </label>
+                                    <Field
+                                        type="text"
+                                        autoComplete="off"
+                                        name="lastName"
+                                        placeholder="Last Name"
+                                        component={Input}
+                                        prefix={
+                                            <HiOutlineUserCircle className="text-xl" />
+                                        }
+                                    />
+                                    {errors.lastName && touched.lastName && (
+                                        <div className="text-red-500 text-sm mt-1">
+                                            {errors.lastName}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">
+                                    Email
+                                </label>
                                 <Field
                                     type="email"
                                     autoComplete="off"
@@ -191,140 +393,159 @@ const Profile = ({
                                         <HiOutlineMail className="text-xl" />
                                     }
                                 />
-                            </FormRow>
-                            <FormRow
-                                name="avatar"
-                                label="Avatar"
-                                {...validatorProps}
-                            >
-                                <Field name="avatar">
-                                    {({ field, form }: FieldProps) => {
-                                        const avatarProps = field.value
-                                            ? { src: field.value }
-                                            : {}
-                                        return (
-                                            <Upload
-                                                className="cursor-pointer"
-                                                showList={false}
-                                                uploadLimit={1}
-                                                onChange={(files) =>
-                                                    onSetFormFile(
-                                                        form,
-                                                        field,
-                                                        files
-                                                    )
-                                                }
-                                                onFileRemove={(files) =>
-                                                    onSetFormFile(
-                                                        form,
-                                                        field,
-                                                        files
-                                                    )
-                                                }
-                                            >
-                                                <Avatar
-                                                    className="border-2 border-white dark:border-gray-800 shadow-lg"
-                                                    size={60}
-                                                    shape="circle"
-                                                    icon={<HiOutlineUser />}
-                                                    {...avatarProps}
-                                                />
-                                            </Upload>
+                                {errors.email && touched.email && (
+                                    <div className="text-red-500 text-sm mt-1">
+                                        {errors.email}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">
+                                    Profile Image
+                                </label>
+                                <Upload
+                                    className="cursor-pointer"
+                                    showList={false}
+                                    uploadLimit={1}
+                                    beforeUpload={beforeUpload}
+                                    onChange={(files) => onSetFormFile(files)}
+                                >
+                                    <Avatar
+                                        className="border-2 border-white dark:border-gray-800 shadow-lg"
+                                        size={60}
+                                        shape="circle"
+                                        icon={<HiOutlineUser />}
+                                        src={avatarImg || undefined}
+                                    />
+                                </Upload>
+                                <div className="mt-2 text-xs text-gray-500">
+                                    Click to upload a profile image (JPEG or
+                                    PNG, max 5MB)
+                                </div>
+                            </div>
+
+                            {/* Preferences Section */}
+                            <div className="mt-8 mb-4">
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Preferences
+                                </h3>
+                                <p className="text-gray-500 text-sm">
+                                    Your personalized preference displayed in
+                                    your account
+                                </p>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">
+                                    Country
+                                </label>
+                                <Select
+                                    placeholder="Select Country"
+                                    isLoading={countriesLoading}
+                                    value={
+                                        selectedCountry
+                                            ? {
+                                                  value: selectedCountry.name,
+                                                  label: selectedCountry.name,
+                                                  flag: selectedCountry.flag,
+                                              }
+                                            : null
+                                    }
+                                    onChange={(option) =>
+                                        setFieldValue(
+                                            'country',
+                                            option?.value || ''
                                         )
+                                    }
+                                    options={countries.map((c) => ({
+                                        value: c.name,
+                                        label: c.name,
+                                        flag: c.flag,
+                                    }))}
+                                    styles={{
+                                        valueContainer: (provided) => ({
+                                            ...provided,
+                                            paddingTop: 0,
+                                            paddingBottom: 0,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                        }),
+                                        singleValue: (provided) => ({
+                                            ...provided,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            marginTop: 0,
+                                            marginBottom: 0,
+                                        }),
                                     }}
-                                </Field>
-                            </FormRow>
-                            <FormRow
-                                name="title"
-                                label="Title"
-                                {...validatorProps}
-                                border={false}
-                            >
-                                <Field
-                                    type="text"
-                                    autoComplete="off"
-                                    name="title"
-                                    placeholder="Title"
-                                    component={Input}
-                                    prefix={
-                                        <HiOutlineBriefcase className="text-xl" />
-                                    }
+                                    components={{
+                                        SingleValue: ({ data }) => (
+                                            <span className="inline-flex items-center gap-1">
+                                                {data.flag && (
+                                                    <img
+                                                        src={data.flag}
+                                                        alt={data.label}
+                                                        className="w-5 h-3 inline-block"
+                                                    />
+                                                )}
+                                                {data.label}
+                                            </span>
+                                        ),
+                                        Option: ({
+                                            innerProps,
+                                            data,
+                                            isFocused,
+                                            isSelected,
+                                        }) => (
+                                            <div
+                                                {...innerProps}
+                                                className={`flex items-center gap-2 p-2 ${
+                                                    isFocused
+                                                        ? 'bg-gray-100'
+                                                        : ''
+                                                } ${
+                                                    isSelected
+                                                        ? 'font-semibold'
+                                                        : ''
+                                                }`}
+                                            >
+                                                <img
+                                                    src={data.flag}
+                                                    alt={data.label}
+                                                    className="w-5 h-3"
+                                                />
+                                                <span>{data.label}</span>
+                                            </div>
+                                        ),
+                                    }}
                                 />
-                            </FormRow>
-                            <FormDesription
-                                className="mt-8"
-                                title="Preferences"
-                                desc="Your personalized preference displayed in your account"
-                            />
-                            <FormRow
-                                name="lang"
-                                label="Language"
-                                {...validatorProps}
-                            >
-                                <Field name="lang">
-                                    {({ field, form }: FieldProps) => (
-                                        <Select<LanguageOption>
-                                            field={field}
-                                            form={form}
-                                            options={langOptions}
-                                            components={{
-                                                Option: CustomSelectOption,
-                                                Control: CustomControl,
-                                            }}
-                                            value={langOptions.filter(
-                                                (option) =>
-                                                    option.value ===
-                                                    values?.lang
-                                            )}
-                                            onChange={(option) =>
-                                                form.setFieldValue(
-                                                    field.name,
-                                                    option?.value
-                                                )
-                                            }
-                                        />
-                                    )}
-                                </Field>
-                            </FormRow>
-                            <FormRow
-                                name="timeZone"
-                                label="Time Zone"
-                                {...validatorProps}
-                            >
-                                <Field
-                                    readOnly
-                                    type="text"
-                                    autoComplete="off"
-                                    name="timeZone"
-                                    placeholder="Time Zone"
-                                    component={Input}
-                                    prefix={
-                                        <HiOutlineGlobeAlt className="text-xl" />
-                                    }
-                                />
-                            </FormRow>
-                            <FormRow
-                                name="syncData"
-                                label="Sync Data"
-                                {...validatorProps}
-                                border={false}
-                            >
-                                <Field name="syncData" component={Switcher} />
-                            </FormRow>
-                            <div className="mt-4 ltr:text-right">
+                                {errors.country && touched.country && (
+                                    <div className="text-red-500 text-sm mt-1">
+                                        {errors.country}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-8 pt-4 border-t flex gap-4">
                                 <Button
-                                    className="ltr:mr-2 rtl:ml-2"
                                     type="button"
+                                    variant="solid"
                                     onClick={() => resetForm()}
+                                    disabled={isSubmitting || loading}
+                                    className="!bg-custom-dark-600 hover:!bg-custom-dark-400 cursor-not-allowed transition-colors duration-200 text-white"
                                 >
                                     Reset
                                 </Button>
                                 <Button
                                     variant="solid"
-                                    loading={isSubmitting}
+                                    loading={isSubmitting || loading}
                                     type="submit"
+                                    className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white"
                                 >
-                                    {isSubmitting ? 'Updating' : 'Update'}
+                                    {isSubmitting || loading
+                                        ? 'Updating'
+                                        : 'Update'}
                                 </Button>
                             </div>
                         </FormContainer>

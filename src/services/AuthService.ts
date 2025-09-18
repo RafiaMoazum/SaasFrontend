@@ -5,7 +5,7 @@ import type {
     ForgotPassword,
     ResetPassword,
     SignInResponse,
-    SignUpResponse,
+    changePassword
 } from '@/@types/auth'
 
 export async function apiSignUp(data: SignUpCredential) {
@@ -67,6 +67,13 @@ export async function apiForgotPassword(data: ForgotPassword) {
 }
 
 export async function apiResetPassword(data: ResetPassword) {
+    return ApiService.fetchData({
+        url: '/auth/password/set-password',
+        method: 'post',
+        data,
+    })
+}
+export async function apiChangePassword(data: changePassword) {
     return ApiService.fetchData({
         url: '/auth/password/set-password',
         method: 'post',

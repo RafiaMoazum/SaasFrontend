@@ -6,8 +6,8 @@ export type SignInCredential = {
 }
 
 export type SignInResponse = {
-    accessToken: string 
-    refreshToken: string 
+    accessToken: string
+    refreshToken: string
     user: {
         id: string
         firstName: string
@@ -19,7 +19,6 @@ export type SignInResponse = {
         profileImage: string
     }
 }
-   
 
 export type SignUpResponse = SignInResponse
 
@@ -39,5 +38,11 @@ export type ForgotPassword = {
 export type ResetPassword = {
     email: string
     token: string
+    newPassword: string
+}
+
+export type changePassword = {
+    email: string
+    currentPassword: string
     newPassword: string
 }

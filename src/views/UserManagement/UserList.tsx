@@ -215,8 +215,8 @@ const UserList = () => {
                 <div className="flex flex-row justify-between items-center pb-4">
                     <h3 className="mb-4 lg:mb-0">Users List</h3>
                     <Link to="/addUser">
-                        <Button block variant="default" size="sm" icon={<HiPlusCircle />}
-                        className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white">
+                        <Button block variant="solid" size="sm" icon={<HiPlusCircle />}
+                        className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white p-1">
                             Add User
                         </Button>
                     </Link>
@@ -277,17 +277,17 @@ const UserList = () => {
                         <p className="mb-6">Do you want to delete this user?</p>
                         <div className="flex justify-end">
                             <Button onClick={() => setShowModal(false)}
-                             variant="default"
+                             variant="solid"
                             type="submit"
-                                className="mr-2 bg-custom-dark-600 hover:bg-custom-dark-400 transition-colors duration-200 text-white">
+                                className="mr-2 !bg-custom-dark-600 hover:!bg-custom-dark-400 transition-colors duration-200 text-white">
                                 Cancel
                             </Button>
                             <Button 
-                            variant="default"
+                            variant="solid"
                             type="submit"
                             loading={loading}
                             onClick={confirmDelete}
-                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white">
+                                className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white">
                                 Delete
                             </Button>
                         </div>

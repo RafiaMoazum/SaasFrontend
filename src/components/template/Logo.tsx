@@ -21,13 +21,14 @@ const Logo = (props: LogoProps) => {
     } = props
 
    
-    const computedWidth = type === 'full' ? '80%' : '100%'
+    const computedWidth = type === 'full' ? '90%' : '100%'
 
     return (
         <div
             className={classNames(
                 'logo mt-[20px] mb-[6px]',
-                type === 'full' && 'ml-[16px]', 
+                type === 'full' && 'ml-[12px]', 
+                type === 'streamline' && 'ml-[2px]',
                 className
             )}
             style={{

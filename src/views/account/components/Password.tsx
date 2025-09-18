@@ -16,6 +16,7 @@ import {
 } from 'react-icons/hi'
 import dayjs from 'dayjs'
 import * as Yup from 'yup'
+import { apiChangePassword } from '@/services/AuthService'
 
 type LoginHistory = {
     type: string

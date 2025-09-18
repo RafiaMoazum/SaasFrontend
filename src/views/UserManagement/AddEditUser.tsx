@@ -575,18 +575,18 @@ const AddEditUser: React.FC = () => {
                         <div className="mt-8 pt-4 border-t flex gap-4">
                             <Button
                                 type="button"
-                                variant="plain"
+                                variant="solid"
                                 onClick={() => navigate('/userManagement')}
                                 disabled={loading}
-                                className="bg-custom-dark-600 hover:bg-custom-dark-400 transition-colors duration-200 text-white"
+                                className="!bg-custom-dark-600 hover:!bg-custom-dark-400 transition-colors duration-200 text-white"
                             >
                                 Cancel
                             </Button>
                             <Button
-                                variant="default"
+                                variant="solid"
                                 type="submit"
                                 loading={loading}
-                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
+                                className="!bg-custom-dark-800 hover:!bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {isEditMode ? 'Update User' : 'Create User'}
                             </Button>
