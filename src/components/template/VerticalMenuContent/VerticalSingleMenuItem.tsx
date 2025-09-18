@@ -51,7 +51,12 @@ const DefaultItem = (props: DefaultItemProps) => {
             <MenuItem key={nav.key} eventKey={nav.key} className="mb-2 ">
                 <Link
                     to={nav.path}
-                    className="flex  items-center h-full w-full"
+                    aria-current={
+                        location.pathname === nav.path ? 'page' : undefined
+                    }
+                    className="h-full w-full flex items-center  rounded-md 
+               hover:bg-custom-dark-800  
+               aria-[current=page]:bg-custom-dark-800 "
                     onClick={() =>
                         onLinkClick?.({
                             key: nav.key,
@@ -59,7 +64,7 @@ const DefaultItem = (props: DefaultItemProps) => {
                             path: nav.path,
                         })
                     }
-                    target={nav.isExternalLink ? '_blank' :  ''}
+                    target={nav.isExternalLink ? '_blank' : ''}
                 >
                     <VerticalMenuIcon icon={nav.icon} />
                     {!sideCollapsed && (

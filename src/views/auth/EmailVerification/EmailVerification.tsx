@@ -146,9 +146,9 @@ const EmailVerification = () => {
 
                     <div className="text-center space-y-3">
                         <Button
-                            variant="solid"
+                            variant="default"
                             onClick={() => navigate('/sign-in')}
-                            className="w-full"
+                            className="w-full bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                         >
                             Go to Sign In
                         </Button>
@@ -158,7 +158,7 @@ const EmailVerification = () => {
                                 variant="default"
                                 onClick={handleResend}
                                 disabled={resending}
-                                className="w-full"
+                                className="w-full bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {resending ? 'Sending...' : 'Send New Verification Email'}
                             </Button>
@@ -168,7 +168,7 @@ const EmailVerification = () => {
                             <Button
                                 variant="default"
                                 onClick={() => navigate('/sign-up')}
-                                className="w-full"
+                                className="w-full bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 Create New Account
                             </Button>

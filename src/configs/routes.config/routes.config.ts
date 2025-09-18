@@ -165,6 +165,15 @@ export const protectedRoutes = [
         authority: [],
     },
 
+    {
+        key: 'account',
+        path: '/account/settings/:tab',
+        component: lazy(() => import('@/views/account/Settings')),
+        authority: [],
+        
+    },
+    
+
 
 ]
 

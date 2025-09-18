@@ -84,18 +84,19 @@ const SignUpForm = (props: SignUpFormProps) => {
             deviceName,
         })
 
-       if (result?.status === 'failed') {
-        setMessage(result.message)
-    } else if (result?.status === 'success') {
-        toast.push(
-            <Notification type="success">
-                {result.message || 'User Registered Successfully. Please check your email for verification link.'}
-            </Notification>,
-            {
-                placement: 'top-center',
-            }
-        )
-    }
+        if (result?.status === 'failed') {
+            setMessage(result.message)
+        } else if (result?.status === 'success') {
+            toast.push(
+                <Notification type="success">
+                    {result.message ||
+                        'User Registered Successfully. Please check your email for verification link.'}
+                </Notification>,
+                {
+                    placement: 'top-center',
+                }
+            )
+        }
 
         setSubmitting(false)
     }
@@ -111,7 +112,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                 initialValues={{
                     firstName: '',
                     lastName: '',
-                     email: '',
+                    email: '',
                     password: '',
                     confirmPassword: '',
                 }}
@@ -198,8 +199,9 @@ const SignUpForm = (props: SignUpFormProps) => {
                             <Button
                                 block
                                 loading={isSubmitting}
-                                variant="solid"
+                                variant="default"
                                 type="submit"
+                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {isSubmitting
                                     ? 'Creating Account...'

@@ -21,6 +21,8 @@ import { User } from '@/@types/user'
 import { Role } from '@/@types/role'
 import { Formik, Form, Field } from 'formik'
 import * as Yup from 'yup'
+import { useAppDispatch, useAppSelector } from '@/store'
+import { setUser } from '@/store/slices/auth/userSlice'
 
 const validationSchema = Yup.object().shape({
     firstName: Yup.string()
@@ -123,6 +125,9 @@ const AddEditUser: React.FC = () => {
     const isEditMode = Boolean(id)
     const navigate = useNavigate()
 
+    const dispatch = useAppDispatch()
+    const loggedInUserId = useAppSelector((state) => state.auth.user.id)
+
     useEffect(() => {
         const fetchRoles = async () => {
             try {
@@ -217,6 +222,8 @@ const AddEditUser: React.FC = () => {
         fetchCountries()
     }, [])
 
+   
+
     const handleSubmit = async (values: FormValues) => {
         const formData = new FormData()
         formData.append('firstName', values.firstName)
@@ -240,6 +247,13 @@ const AddEditUser: React.FC = () => {
 
             if (isEditMode && id) {
                 res = await apiUpdateUser(id, formData)
+
+                if (id === loggedInUserId) {
+                    const updatedUser = res?.data?.data
+                    if (updatedUser) {
+                        dispatch(setUser(updatedUser))
+                    }
+                }
             } else {
                 res = await apiAddUser(formData)
             }
@@ -250,16 +264,19 @@ const AddEditUser: React.FC = () => {
                         (isEditMode ? 'User updated' : 'User created')}
                 </Notification>
             )
+
             setTimeout(() => navigate('/userManagement'), 1000)
         } catch (error) {
             console.error('Submit error:', error)
             let message = 'An unknown error occurred'
+
             if (error instanceof AxiosError) {
                 message =
                     error.response?.data?.message ||
                     error.response?.data?.error ||
                     `Failed to ${isEditMode ? 'update' : 'create'} user`
             }
+
             toast.push(
                 <Notification title="Error" type="danger" duration={4000}>
                     {message}
@@ -561,13 +578,15 @@ const AddEditUser: React.FC = () => {
                                 variant="plain"
                                 onClick={() => navigate('/userManagement')}
                                 disabled={loading}
+                                className="bg-custom-dark-600 hover:bg-custom-dark-400 transition-colors duration-200 text-white"
                             >
                                 Cancel
                             </Button>
                             <Button
-                                variant="solid"
+                                variant="default"
                                 type="submit"
                                 loading={loading}
+                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {isEditMode ? 'Update User' : 'Create User'}
                             </Button>

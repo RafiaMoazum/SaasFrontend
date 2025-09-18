@@ -160,9 +160,10 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
                             ) : (
                                 <Button
                                     block
-                                    variant="solid"
+                                    variant="default"
                                     type="button"
                                     onClick={onContinue}
+                                    className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                                 >
                                     Continue
                                 </Button>

@@ -17,7 +17,7 @@ const Side = ({ children, content, ...rest }: SideProps) => {
                     background: `#1F1F1F`,
                 }}
             >
-                <Logo mode="light" />
+                <Logo mode="dark" logoWidth={'50%'}/>
                 <div>
                     <div className="mb-6 flex items-center gap-4">
                         <Avatar

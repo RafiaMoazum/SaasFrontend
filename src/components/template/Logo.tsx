@@ -14,25 +14,29 @@ const LOGO_SRC_PATH = '/img/logo/'
 const Logo = (props: LogoProps) => {
     const {
         type = 'full',
-        mode = 'light',
+        mode = 'dark',
         className,
         imgClass,
         style,
     } = props
 
-    // ✅ Dynamic width based on type
+   
     const computedWidth = type === 'full' ? '80%' : '100%'
 
     return (
         <div
-            className={classNames('logo mt-[20px] mb-[4px]', className)} 
+            className={classNames(
+                'logo mt-[20px] mb-[6px]',
+                type === 'full' && 'ml-[16px]', 
+                className
+            )}
             style={{
                 ...style,
                 width: computedWidth,
             }}
         >
             <img
-                className={classNames('w-full', imgClass)} 
+                className={classNames('w-full', imgClass)}
                 src={`${LOGO_SRC_PATH}logo-${mode}-${type}.png`}
                 alt={`${APP_NAME} logo`}
             />

@@ -21,19 +21,19 @@ type ForgotPasswordFormSchema = {
 }
 
 const validationSchema = Yup.object().shape({
-   email: Yup.string()
-          .email('Email must be a valid email')
-          .required('Email is required')
-          .test(
-              'domain-has-dot',
-              'Email must include user@domain.com',
-              function (value) {
-                  if (!value) return true
-                  const parts = value.split('@')
-                  if (parts.length !== 2) return false
-                  return parts[1].includes('.')
-              }
-          ),
+    email: Yup.string()
+        .email('Email must be a valid email')
+        .required('Email is required')
+        .test(
+            'domain-has-dot',
+            'Email must include user@domain.com',
+            function (value) {
+                if (!value) return true
+                const parts = value.split('@')
+                if (parts.length !== 2) return false
+                return parts[1].includes('.')
+            }
+        ),
 })
 
 const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
@@ -122,8 +122,9 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
                             <Button
                                 block
                                 loading={isSubmitting}
-                                variant="solid"
+                                variant="default"
                                 type="submit"
+                                className="bg-custom-dark-800 hover:bg-custom-dark-600 transition-colors duration-200 text-white"
                             >
                                 {emailSent ? 'Resend Email' : 'Send Email'}
                             </Button>

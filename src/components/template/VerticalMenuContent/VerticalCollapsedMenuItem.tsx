@@ -53,7 +53,12 @@ const DefaultItem = ({ nav, onLinkClick, userAuthority }: DefaultItemProps) => {
                         <MenuItem eventKey={subNav.key}>
                             {subNav.path ? (
                                 <Link
-                                    className="h-full w-full flex items-center"
+                                aria-current={
+                        location.pathname === nav.path ? 'page' : undefined
+                    }
+                    className="h-full w-full flex items-center  rounded-md 
+               hover:bg-custom-dark-800  
+               aria-[current=page]:bg-custom-dark-800 "
                                     to={subNav.path}
                                     onClick={() =>
                                         onLinkClick?.({

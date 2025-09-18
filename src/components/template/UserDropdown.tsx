@@ -4,7 +4,7 @@ import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import useAuth from '@/utils/hooks/useAuth'
 import { Link } from 'react-router-dom'
 import classNames from 'classnames'
-import { HiOutlineLogout, HiOutlineUser } from 'react-icons/hi'
+import { HiOutlineLogout, HiOutlineUser, HiOutlineCog } from 'react-icons/hi'
 import type { CommonProps } from '@/@types/common'
 import { useAppSelector } from '@/store'
 
@@ -14,7 +14,11 @@ type DropdownList = {
     icon: JSX.Element
 }
 
-const dropdownItemList: DropdownList[] = []
+const dropdownItemList: DropdownList[] = [{
+        label: 'Account Setting',
+        path: '/account/settings/profile',
+        icon: <HiOutlineCog />,
+    },]
 
 const getFullImageUrl = (filename: string | null) => {
     if (!filename) return null
@@ -41,8 +45,8 @@ const _UserDropdown = ({ className }: CommonProps) => {
                 icon={!avatarSrc ? <HiOutlineUser /> : undefined}
             />
             <div className="hidden md:block">
-                <div className="text-xs capitalize">{role}</div>
-                <div className="font-bold">{firstName + ' ' + lastName}</div>
+                <div className="text-xs capitalize text-custom-dark-900"> {typeof role === 'string' ? role : role?.roleName}</div>
+                <div className="font-bold text-custom-dark-900">{firstName + ' ' + lastName}</div>
             </div>
         </div>
     )
@@ -63,10 +67,10 @@ const _UserDropdown = ({ className }: CommonProps) => {
                             icon={!avatarSrc ? <HiOutlineUser /> : undefined}
                         />
                         <div>
-                            <div className="font-bold text-gray-900 dark:text-gray-100">
+                            <div className="font-bold text-custom-dark-900">
                                 {firstName + ' ' + lastName}
                             </div>
-                            <div className="text-xs">{email}</div>
+                            <div className="text-xs text-custom-dark-900">{email}</div>
                         </div>
                     </div>
                 </Dropdown.Item>
@@ -85,7 +89,7 @@ const _UserDropdown = ({ className }: CommonProps) => {
                                 <span className="text-xl opacity-50">
                                     {item.icon}
                                 </span>
-                                <span>{item.label}</span>
+                                <span className='text-custom-dark-900'>{item.label}</span>
                             </span>
                         </Link>
                     </Dropdown.Item>
@@ -96,10 +100,10 @@ const _UserDropdown = ({ className }: CommonProps) => {
                     className="gap-2"
                     onClick={signOut}
                 >
-                    <span className="text-xl opacity-50">
+                    <span className="text-xl opacity-50 ">
                         <HiOutlineLogout />
                     </span>
-                    <span>Sign Out</span>
+                    <span className='text-custom-dark-900'>Sign Out</span>
                 </Dropdown.Item>
             </Dropdown>
         </div>
